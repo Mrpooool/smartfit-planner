@@ -23,7 +23,7 @@ const model = {
     });
   }),
 
-  markComplete: action(function markComplete(planId, date) {
+  markCompleted: action(function markComplete(planId, date) {
     const plan = this.savedPlans.find(function matchIdCB(p) {
       return p.id === planId;
     })
