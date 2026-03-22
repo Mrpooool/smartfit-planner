@@ -2,42 +2,51 @@
 // TODO: Replace with your own API key from https://open.bigmodel.cn
 
 const GLM_API_URL = "https://open.bigmodel.cn/api/paas/v4/chat/completions";
-const GLM_API_KEY = "YOUR_GLM_API_KEY";
+const GLM_API_KEY = "a952b954c0804b39ae8663510704712e.UVeuq07IkLb8Tg8g";
 
-/**
- * Generate a list of exercises based on user conditions.
- * @param {Object} params
- * @param {number}   params.duration     - Available time in minutes (15 / 30 / 60)
- * @param {string[]} params.equipment    - Available equipment (e.g. ["none"] or ["dumbbells"])
- * @param {string}   params.targetMuscle - Target muscle group (e.g. "Full Body")
- * @returns {Promise<Array<{name: string, sets: number, reps: number, instructions: string}>>}
- */
-export async function generateWorkoutPlan({ duration, equipment, targetMuscle }) {
-  const prompt =
-    `Generate a ${duration}-minute workout targeting ${targetMuscle} ` +
-    `using only: ${equipment.join(", ")}.\n` +
-    `Return a JSON array. Each item must have:\n` +
-    `- name (string): exercise name in English\n` +
-    `- sets (number)\n` +
-    `- reps (number)\n` +
-    `- instructions (string): one sentence\n` +
-    `Return ONLY valid JSON, no markdown, no explanation.`;
+export async function generateWorkoutPlan(duration, equipment, targetMuscle) {
+  const messages = [
+    {
+      role: "system",
+      content:
+        "You are a helpful fitness assistant that creates workout plans based on user conditions. " +
+        "Respond ONLY with valid JSON in this exact format, no extra text:\n" +
+        JSON.stringify({
+          name: "Plan Name",
+          exercises: [
+            {
+              "name": "Exercise Name",
+              "sets": "Number of sets",
+              "reps": "Number of reps per set",
+            }
+          ]
+        }, null, 2)
+    },
+    {
+      role: "user",
+      content: `Create a ${duration}-minute workout plan using ${equipment} equipment, targeting ${targetMuscle}.`
+    }
+  ];
 
   const response = await fetch(GLM_API_URL, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
       Authorization: `Bearer ${GLM_API_KEY}`,
+      "Content-Type": "application/json"
     },
     body: JSON.stringify({
       model: "glm-4-flash",
-      messages: [{ role: "user", content: prompt }],
-    }),
+      messages: messages,
+      temperature: 1,
+      response_format: { type: "json_object" }
+    })
   });
 
-  if (!response.ok) throw new Error(`GLM API error: ${response.status}`);
+  if (!response.ok) {
+    throw new Error(`GLM API error: ${response.status}`);
+  }
 
-  const result = await response.json();
-  const content = result.choices?.[0]?.message?.content;
-  return JSON.parse(content);
+  const data = await response.json();
+  const text = data.choices[0].message.content;
+  return JSON.parse(text);
 }
