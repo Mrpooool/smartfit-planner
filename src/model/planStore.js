@@ -1,6 +1,8 @@
 import { observable, action } from "mobx";
 
-export const planStore = observable({
+export const planStore = observable(model);
+
+const model = {
   /** @type {import('../types/workout').WorkoutPlan | null} */
   currentPlan: null,
 
@@ -14,7 +16,7 @@ export const planStore = observable({
   }),
 
   addSavedPlan: action(function addSavedPlan(plan) {
-    this.savedPlans = [...this.savedPlans, plan];
+    this.savedPlans = [...this.savedPlans, plan];  
   }),
 
   removeSavedPlan: action(function removeSavedPlan(planId) {
@@ -23,12 +25,5 @@ export const planStore = observable({
     });
   }),
 
-  markCompleted: action(function markCompleted(planId, date) {
-    const plan = this.savedPlans.find(function matchIdACB(p) {
-      return p.id === planId;
-    });
-    if (plan && !plan.completedDates.includes(date)) {
-      plan.completedDates = [...plan.completedDates, date];
-    }
-  }),
-});
+  
+};
