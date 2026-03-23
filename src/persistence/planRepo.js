@@ -4,11 +4,9 @@
 //   - planStore.ready gates the root layout (nothing meaningful renders until loaded)
 //   - onSnapshot provides live updates across devices (A+ criterion)
 
-import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "firebase/firestore";
-import { firebaseApp } from "./firebaseConfig";
+import { doc, setDoc, getDoc, onSnapshot } from "firebase/firestore";
+import { db } from "./firebaseConfig";
 import { planStore } from "../model/planStore";
-
-const db = getFirestore(firebaseApp);
 
 // Call after user logs in, passing MobX's reaction function.
 // Returns a disconnect function to call on logout.
