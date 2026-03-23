@@ -1,24 +1,16 @@
-// GLM API adapter:
-// - Sends workout requirements to Zhipu GLM
-// - Expects strict JSON output
-// - Normalizes returned data into predictable shape
-//
-// API key must come from Expo public env:
-// EXPO_PUBLIC_GLM_API_KEY=<your-key>
+// GLM API adapter.
+// API key must come from Expo public env: EXPO_PUBLIC_GLM_API_KEY
 
 const GLM_API_URL = "https://open.bigmodel.cn/api/paas/v4/chat/completions";
 const GLM_API_KEY = process.env.EXPO_PUBLIC_GLM_API_KEY;
 
 export async function generateWorkoutPlan(duration, equipment, targetMuscle) {
-  // Fail fast if env is missing so caller gets explicit setup error.
   if (!GLM_API_KEY) {
     throw new Error("Missing EXPO_PUBLIC_GLM_API_KEY.");
   }
 
-  // Prompt text should always be deterministic plain text.
   const equipmentText = Array.isArray(equipment) ? equipment.join(", ") : String(equipment);
 
-  // We force JSON-only output in system prompt to simplify parsing.
   const messages = [
     {
       role: "system",
@@ -65,34 +57,24 @@ export async function generateWorkoutPlan(duration, equipment, targetMuscle) {
   });
 
   if (!response.ok) {
-    // Read response body to expose provider-side error details.
     const errorText = await response.text();
     throw new Error(`GLM API error: ${response.status} ${errorText}`);
   }
 
-  // GLM content may be raw string JSON or object-like payload.
   const data = await response.json();
   const content = data?.choices?.[0]?.message?.content;
   const plan = parseModelJsonContent(content);
-  return normalizeWorkoutPlan(plan);
+  validateWorkoutPlan(plan);
+  return plan;
 }
 
 function parseModelJsonContent(content) {
-  if (!content) {
+  if (typeof content !== "string" || !content.trim()) {
     throw new Error("GLM response is empty.");
   }
 
-  if (typeof content === "object") {
-    // Some SDK/providers may already deserialize JSON content.
-    return content;
-  }
-
-  // Defensive cleanup in case model wraps JSON in markdown fences.
-  const cleaned = String(content)
-    .trim()
-    .replace(/^```json\s*/i, "")
-    .replace(/```$/, "")
-    .trim();
+  // Keep this small cleanup for occasional fenced JSON responses.
+  const cleaned = content.trim().replace(/^```json\s*/i, "").replace(/```$/, "").trim();
 
   try {
     return JSON.parse(cleaned);
@@ -101,34 +83,32 @@ function parseModelJsonContent(content) {
   }
 }
 
-function normalizeWorkoutPlan(plan) {
-  // Keep outbound shape stable for presenters/views.
+function validateWorkoutPlan(plan) {
   if (!plan || typeof plan !== "object") {
     throw new Error("GLM returned invalid plan object.");
   }
 
-  const name = typeof plan.name === "string" ? plan.name : "Generated Plan";
-  const rawExercises = Array.isArray(plan.exercises) ? plan.exercises : [];
-
-  const exercises = rawExercises
-    .map(function toExercise(item) {
-      // Coerce to numbers and enforce positive integers.
-      const sets = Number(item?.sets);
-      const reps = Number(item?.reps);
-
-      if (!Number.isFinite(sets) || !Number.isFinite(reps)) return null;
-
-      return {
-        name: String(item?.name || "Exercise"),
-        sets: Math.max(1, Math.round(sets)),
-        reps: Math.max(1, Math.round(reps)),
-      };
-    })
-    .filter(Boolean);
-
-  if (!exercises.length) {
-    throw new Error("GLM returned no valid exercises.");
+  if (typeof plan.name !== "string" || !plan.name.trim()) {
+    throw new Error("GLM returned plan without valid name.");
   }
 
-  return { name, exercises };
+  if (!Array.isArray(plan.exercises) || plan.exercises.length === 0) {
+    throw new Error("GLM returned plan without exercises.");
+  }
+
+  const allExercisesValid = plan.exercises.every(function isValidExercise(item) {
+    return (
+      item &&
+      typeof item.name === "string" &&
+      item.name.trim() &&
+      Number.isInteger(item.sets) &&
+      item.sets > 0 &&
+      Number.isInteger(item.reps) &&
+      item.reps > 0
+    );
+  });
+
+  if (!allExercisesValid) {
+    throw new Error("GLM returned exercises with invalid fields.");
+  }
 }
