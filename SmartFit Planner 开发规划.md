@@ -46,9 +46,10 @@
 * **路由导航:** Expo Router。利用基于文件系统的路由，处理页面跳转和底部导航栏。
 * **数据持久化与鉴权:** Firebase。强制使用 Email/Password 登录获取唯一的 uid，并将用户的自定义计划存入 Firestore。**使用 Firestore `onSnapshot` 实现实时同步**，用户在多设备/多实例上看到相同数据（live update）。所有 Firebase 读写由 MobX 的 `reaction` / `flow` 触发，Presenter 和 View 绝不直接调用 Firebase API。
 * **核心 API (Mash-up 策略):**
-  * **GLM-5 (智谱 AI):** 负责处理用户输入的条件，生成结构化的 JSON 训练计划。
+  * **GLM-4.7-flash (智谱 AI):** 负责处理用户输入的条件，生成结构化的 JSON 训练计划。
   * **ExerciseDB (RapidAPI):** 根据 AI 生成的动作名称，匹配具体的肌群数据和教学 GIF。
 * **用户可见第三方组件 (User-visible Third-party Components):**
+  * **肌群选择器:** `@react-native-picker/picker` — Home 页目标肌群 Picker 下拉选择器
   * **图表:** `react-native-chart-kit` — 用于 Profile 页的周训练量柱状图
   * **日历:** `react-native-calendars` — 用于 Profile 页的训练打卡日历视图
 
@@ -70,14 +71,16 @@
 ```
 smartfit-planner/
 ├── app/                        # Expo Router 路由层（保持在项目根目录，不迁移到 src）
-│   ├── _layout.jsx
+│   ├── _layout.jsx             # Stack 根布局：(tabs) + action/[id]；单 useEffect + MobX reaction 监听 uid
 │   ├── (tabs)/
-│   │   ├── _layout.jsx
-│   │   ├── index.jsx           # 仅做路由入口，直接 export default GeneratorPresenter
-│   │   ├── explore.jsx         # 仅做路由入口，直接 export default ExplorerPresenter
-│   │   └── profile.jsx         # 仅做路由入口，直接 export default ProfilePresenter
-│   ├── details.jsx             # 仅做路由入口，直接 export default DetailsPresenter
-│   └── login.jsx               # 仅做路由入口，直接 export default LoginPresenter
+│   │   ├── _layout.jsx         # 4 个 Tab：Home / Explore / Plan / Profile
+│   │   ├── index.jsx           # → GeneratorPresenter
+│   │   ├── explore.jsx         # → ExplorerPresenter
+│   │   ├── plan.jsx            # → PlanPresenter（当前计划详情 Tab）
+│   │   └── profile.jsx         # → ProfilePresenter
+│   ├── action/
+│   │   └── [id].jsx            # → ActionDetailsPresenter（动作 GIF + 说明 Stack 页）
+│   └── login.jsx               # → LoginPresenter
 └── src/
     ├── types/                  # 共享数据结构定义（Day 1 最小合同）
     │   └── workout.js          # WorkoutPlan、Exercise 对象结构（JSDoc 注释说明字段）
@@ -92,18 +95,20 @@ smartfit-planner/
     │   ├── glmApi.js
     │   └── exerciseDbApi.js
     ├── presenters/             # observer 连接 model 和 view
-    │   ├── GeneratorPresenter.jsx
+    │   ├── GeneratorPresenter.jsx   # 展开传独立 props（duration/equipment/targetMuscle/promise/data/error）
+    │   ├── PlanPresenter.jsx        # 计划详情：保存/完成打卡/编辑组数次数/跳转动作详情/删除
+    │   ├── ActionDetailsPresenter.jsx  # 动作详情：从 URL 参数读 index，展示 GIF + 说明
     │   ├── ExplorerPresenter.jsx
-    │   ├── DetailsPresenter.jsx
     │   ├── ProfilePresenter.jsx
     │   └── LoginPresenter.jsx
     └── views/                  # 纯渲染组件（只收 props）
         ├── common/
-        │   └── AsyncStateView.jsx   # 通用 loading/error/empty（替代多份 suspenseView）
-        ├── GeneratorView.jsx
+        │   └── AsyncStateView.jsx   # 通用 loading/error/empty
+        ├── GeneratorView.jsx        # 接收展开的独立 props（非整体 formParams 对象）
+        ├── PlanView.jsx             # 计划列表 + 操作按钮
+        ├── ActionDetailsView.jsx    # 单个动作 GIF + 说明
         ├── ExplorerView.jsx
         ├── ExerciseCardView.jsx
-        ├── PlanDetailView.jsx
         ├── ProfileView.jsx
         ├── LoginView.jsx
         ├── CalendarView.jsx
@@ -195,7 +200,7 @@ This is the main landing page where users generate AI fitness plans.
 |   while generation is in progress.    |
 |                                       |
 | ------------------------------------- |
-| 🏠 Home | 🔍 Explore | 👤 Profile       |
+| 🏠 Home | 🔍 Explore | 📋 Plan | 👤 Profile |
 +---------------------------------------+
 ```
 
@@ -231,39 +236,34 @@ Page to browse the ExerciseDB database, with an option to add exercises to a cus
 |   'View' opens the Details modal.     |
 |                                       |
 | ------------------------------------- |
-| 🏠 Home | 🔍 Explore | 👤 Profile       |
+| 🏠 Home | 🔍 Explore | 📋 Plan | 👤 Profile |
 +---------------------------------------+
 ```
 
-### **7.3. Workout Details (Modal/Overlay)**
+### **7.3. Plan Tab + Action Details**
 
-Displays the generated plan or the user's manually assembled plan. Includes custom naming.
+Plan Tab 展示当前计划内容，点击动作卡片跳转 Stack 页查看 GIF 和说明。
 
 ```
-+---------------------------------------+
-| ⬅️ Back                                |
-|                                       |
-| ✏️ [ Plan Name: Enter custom name... ] |
-|                                       |
-| 1. Push-ups                           |
-| 🖼️ [==== Exercise GIF Animation ====]  |
-| 🔢 Sets: 3  |  Reps: 12 (Editable)    |
-| 📝 Instructions: Keep core tight...   |
-|                                       |
-| 2. Bodyweight Squats                  |
-| 🖼️ [==== Exercise GIF Animation ====]  |
-| 🔢 Sets: 3  |  Reps: 15 (Editable)    |
-| 📝 Instructions: Go below parallel... |
-|                                       |
-| ------------------------------------- |
++---------------------------------------+   +---------------------------------------+
+| 📋 Plan Tab                           |   | ⬅️ Back   Action Details              |
+|                                       |   |                                       |
+| ✏️ [ Plan Name ]                       |   | Push-ups                              |
+|                                       |   |                                       |
+| 1. Push-ups              [ → ]        |   | 🖼️ [==== Exercise GIF Animation ====]  |
+| 2. Bodyweight Squats     [ → ]        |   |                                       |
+|    Sets: [3]  Reps: [12] (Editable)   |   | 📝 Instructions: Keep core tight...   |
+|                                       |   |                                       |
+| ------------------------------------- |   +---------------------------------------+
 | ⭐ [ SAVE PLAN TO LIBRARY ]             |
 | 📦 [ MARK AS COMPLETED ]                |
+| 🗑️ [ DELETE PLAN ]                      |
 |                                       |
 | * Interaction Note:                   |
-|   Users can edit sets/reps inline.    |
-|   Save writes to Firebase via MobX    |
+|   Save/Delete/Complete 均弹 Alert 确认 |
+|   Save 写入 Firebase via MobX         |
 |   action → reaction → Firestore.     |
-|   Success/failure shown via Toast.    |
+|   点击动作行 → router.push(/action/i) |
 +---------------------------------------+
 ```
 
@@ -299,7 +299,7 @@ Data persistence showcase. Lists saved plans and visualizes workout progress.
 | 🔥 [ LOGOUT ]                           |
 |                                       |
 | ------------------------------------- |
-| 🏠 Home | 🔍 Explore | 👤 Profile       |
+| 🏠 Home | 🔍 Explore | 📋 Plan | 👤 Profile |
 +---------------------------------------+
 ```
 
