@@ -110,8 +110,12 @@ export default observer(function GeneratorPresenter() {
 
   return (
     <GeneratorView
-      formParams={formParams}
-      planPromiseState={planPromiseState}
+      duration={formParams.duration}          // ← Presenter 读了，observer 追踪到
+      equipment={formParams.equipment}
+      targetMuscle={formParams.targetMuscle}
+      promise={planPromiseState.promise}
+      data={planPromiseState.data}
+      error={planPromiseState.error}
       warningMessage={uiState.warningMessage}
       onGenerate={onGenerateACB}
       onParamChange={onParamChangeACB}

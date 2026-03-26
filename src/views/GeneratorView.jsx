@@ -8,8 +8,7 @@ export function GeneratorView(props) {
   // TODO: target muscle group picker
   // TODO: GENERATE button (disabled while promise is pending)
   // TODO: AsyncStateView for planPromiseState (Skeleton UI while loading)
-  const isLoading = Boolean(props.planPromiseState.promise) &&
-    !props.planPromiseState.data && !props.planPromiseState.error;
+  const isLoading = Boolean(props.promise) && !props.data && !props.error;
 
 
   return (
@@ -36,7 +35,7 @@ export function GeneratorView(props) {
         <Text style={styles.sectionTitle}>Target Muscle Group</Text>
         <View style={styles.pickerWrapper}>
           <Picker
-            selectedValue={props.formParams.targetMuscle}
+            selectedValue={props.targetMuscle}
             onValueChange={chooseTargetMuscleACB}
           >
             <Picker.Item label="Full Body" value="full body" />
@@ -74,7 +73,7 @@ export function GeneratorView(props) {
         key={duration}
         role="button"
         onPress={chooseTimeACB}
-        style={props.formParams.duration === duration ? styles.selectedButton : styles.button}
+        style={props.duration === duration ? styles.selectedButton : styles.button}
       >
         <Text style={styles.buttonText}>{duration} mins</Text>
       </Pressable>
@@ -91,7 +90,7 @@ export function GeneratorView(props) {
         key={equipment}
         role="button"
         onPress={chooseEquipACB}
-        style={props.formParams.equipment.includes(equipment) ? styles.selectedButton : styles.button}
+        style={props.equipment.includes(equipment) ? styles.selectedButton : styles.button}
       >
         <Text style={styles.buttonText}>{equipment}</Text>
       </Pressable>
