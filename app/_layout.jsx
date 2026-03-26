@@ -1,9 +1,9 @@
-import { useEffect } from "react";
 import { Stack } from "expo-router";
 import { reaction } from "mobx";
+import { useEffect } from "react";
+import { userStore } from "../src/model/userStore";
 import { connectAuth } from "../src/persistence/authRepo";
 import { connectToPersistence } from "../src/persistence/planRepo";
-import { userStore } from "../src/model/userStore";
 
 export default function RootLayout() {
   // 1. Listen for Firebase Auth state changes (sets userStore.uid/ready)
@@ -20,5 +20,16 @@ export default function RootLayout() {
     };
   }, [userStore.uid]);
 
-  return <Stack />;
+  return (
+    <Stack>
+      <Stack.Screen
+        name="(tabs)"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="details"
+        options={{ title: "Details" }}
+      />
+    </Stack>
+  )
 }
