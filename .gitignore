@@ -44,7 +44,3 @@ app-example
 /android
 .claude/worktrees/determined-matsumoto/
 
-package.json
-tsconfig.json
-package-lock.json
-
