@@ -12,11 +12,12 @@ import { Image } from "expo-image";
  *  - onRenamePlan(name)  → rename plan
  *  - onDeletePlan()      → delete plan
  */
-export function PlanDetailView({
+export function PlanView({
   plan,
   onSavePlan,
   onMarkCompleted,
   onEditExercise,
+  onPressExercise,
   onRenamePlan,
   onDeletePlan,
 }) {
@@ -33,24 +34,26 @@ export function PlanDetailView({
   function renderExerciseCB(exercise, index) {
     return (
       <View key={exercise.id || index} style={styles.exerciseCard}>
-        {/* Exercise GIF */}
-        {exercise.gifUrl ? (
-          <Image
-            source={{ uri: exercise.gifUrl }}
-            style={styles.gif}
-            contentFit="contain"
-          />
-        ) : (
-          <View style={styles.gifPlaceholder}>
-            <Text style={styles.gifPlaceholderText}>🏋️</Text>
-          </View>
-        )}
+        <TouchableOpacity activeOpacity={0.7} onPress={function onExercisePressCB() { onPressExercise(index); }}>
+          {/* Exercise GIF */}
+          {exercise.gifUrl ? (
+            <Image
+              source={{ uri: exercise.gifUrl }}
+              style={styles.gif}
+              contentFit="contain"
+            />
+          ) : (
+            <View style={styles.gifPlaceholder}>
+              <Text style={styles.gifPlaceholderText}>🏋️</Text>
+            </View>
+          )}
 
-        {/* Exercise Info */}
-        <Text style={styles.exerciseName}>
-          {index + 1}. {exercise.name}
-        </Text>
-        <Text style={styles.targetMuscle}>Target: {exercise.targetMuscle}</Text>
+          {/* Exercise Info */}
+          <Text style={styles.exerciseName}>
+            {index + 1}. {exercise.name}
+          </Text>
+          <Text style={styles.targetMuscle}>Target: {exercise.targetMuscle}</Text>
+        </TouchableOpacity>
 
         {/* Editable Sets & Reps */}
         <View style={styles.setsRepsRow}>

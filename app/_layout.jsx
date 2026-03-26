@@ -1,9 +1,9 @@
-import { useEffect } from "react";
 import { Stack } from "expo-router";
 import { reaction } from "mobx";
+import { useEffect } from "react";
+import { userStore } from "../src/model/userStore";
 import { connectAuth } from "../src/persistence/authRepo";
 import { connectToPersistence } from "../src/persistence/planRepo";
-import { userStore } from "../src/model/userStore";
 
 export default function RootLayout() {
   useEffect(function onMountACB() {
@@ -34,5 +34,16 @@ export default function RootLayout() {
     };
   }, []);
 
-  return <Stack />;
+  return (
+    <Stack>
+      <Stack.Screen
+        name="(tabs)"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="action/[id]"
+        options={{ title: "Action Details", headerBackTitle: "Back" }}
+      />
+    </Stack>
+  )
 }

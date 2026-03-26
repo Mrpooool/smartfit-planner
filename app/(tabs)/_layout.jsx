@@ -23,10 +23,10 @@ export default function TabsLayout() {
                 }}
             />
             <Tabs.Screen
-                name = "details" 
+                name = "plan" 
                 options = {{
-                    title: "Details",
-                    tabBarIcon: function renderDetailsIconACB(){
+                    title: "Plan",
+                    tabBarIcon: function renderPlanIconACB(){
                         return <Text>📋</Text>
                     }
                 }}
