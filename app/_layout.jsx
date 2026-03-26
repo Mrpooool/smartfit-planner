@@ -1,20 +1,49 @@
 import { Stack } from "expo-router";
-import { observer } from "mobx-react-lite";
+import { reaction } from "mobx";
+import { useEffect } from "react";
 import { userStore } from "../src/model/userStore";
-import { AsyncStateView } from "../src/views/common/AsyncStateView";
+import { connectAuth } from "../src/persistence/authRepo";
+import { connectToPersistence } from "../src/persistence/planRepo";
 
-export default observer(RootLayout);
+export default function RootLayout() {
+  useEffect(function onMountACB() {
+    // 1. Listen for Firebase Auth state changes (sets userStore.uid/ready)
+    connectAuth();
 
-function RootLayout() {
-  // Wait for Firebase Auth state to resolve before rendering
-  if (!userStore.ready)
-    return <AsyncStateView promise="loading" />;
+    // 2. Use MobX reaction to watch userStore.uid changes.
+    //    This replaces the previous useEffect([userStore.uid]) approach,
+    //    which caused an ESLint exhaustive-deps warning because MobX
+    //    observables are not valid React hook dependencies.
+    let disconnectPersistence = null;
+
+    const stopUidReaction = reaction(
+      () => userStore.uid,                     // data function: track uid
+      (uid) => {                               // effect function: runs when uid changes
+        disconnectPersistence?.();              // clean up previous connection
+        disconnectPersistence = null;
+        if (uid) {
+          disconnectPersistence = connectToPersistence(uid, reaction);
+        }
+      },
+      { fireImmediately: true }                // run once at startup too
+    );
+
+    return function onCleanupACB() {
+      stopUidReaction();
+      disconnectPersistence?.();
+    };
+  }, []);
 
   return (
     <Stack>
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="details" options={{ title: "Workout Details" }} />
-      <Stack.Screen name="login" options={{ headerShown: false }} />
+      <Stack.Screen
+        name="(tabs)"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="action/[id]"
+        options={{ title: "Action Details", headerBackTitle: "Back" }}
+      />
     </Stack>
-  );
+  )
 }

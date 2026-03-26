@@ -1,14 +1,11 @@
 import {
-  getAuth,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
 } from "firebase/auth";
-import { firebaseApp } from "./firebaseConfig";
+import { auth } from "./firebaseConfig";
 import { userStore } from "../model/userStore";
-
-const auth = getAuth(firebaseApp);
 
 // Call once on app startup (e.g. in root _layout useEffect).
 // Listens for auth state changes and updates userStore accordingly.
