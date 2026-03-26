@@ -1,5 +1,5 @@
 /**
- * Integration tests for DetailsPresenter logic.
+ * Integration tests for PlanPresenter logic.
  *
  * We test the presenter's callback functions against a real MobX planStore
  * to verify the data flow: user action → presenter callback → store mutation.
@@ -27,8 +27,8 @@ jest.mock("mobx-react-lite", () => ({
   observer: (component) => component, // pass-through, no React rendering needed
 }));
 
-jest.mock("../../views/PlanDetailView", () => ({
-  PlanDetailView: jest.fn(() => null),
+jest.mock("../../views/PlanView", () => ({
+  PlanView: jest.fn(() => null),
 }));
 
 // Use the REAL planStore
@@ -62,7 +62,7 @@ beforeEach(() => {
   Alert.alert.mockClear();
 });
 
-describe("planStore actions used by DetailsPresenter", () => {
+describe("planStore actions used by PlanPresenter", () => {
 
   // ── setCurrentPlan ──
   test("setCurrentPlan sets the current plan", () => {
@@ -148,10 +148,10 @@ describe("planStore actions used by DetailsPresenter", () => {
   });
 });
 
-describe("DetailsPresenter save/update flow", () => {
+describe("PlanPresenter save/update flow", () => {
 
   test("saving a new plan adds it to savedPlans", () => {
-    // Simulate what DetailsPresenter.onSavePlanACB does
+    // Simulate what PlanPresenter.onSavePlanACB does
     const plan = { ...samplePlan };
     planStore.setCurrentPlan(plan);
 
@@ -181,7 +181,7 @@ describe("DetailsPresenter save/update flow", () => {
     planStore.addSavedPlan({ ...samplePlan });
     planStore.setCurrentPlan({ ...samplePlan });
 
-    // Simulate DetailsPresenter.onDeletePlanACB's confirm callback
+    // Simulate PlanPresenter.onDeletePlanACB's confirm callback
     planStore.removeSavedPlan("plan-1");
     planStore.setCurrentPlan(null);
 
@@ -197,7 +197,7 @@ describe("DetailsPresenter save/update flow", () => {
     planStore.markCompleted("plan-1", today);
     expect(planStore.savedPlans[0].completedDates).toEqual([today]);
 
-    // Duplicate check (what DetailsPresenter does)
+    // Duplicate check (what PlanPresenter does)
     const alreadyDone = planStore.savedPlans[0].completedDates.includes(today);
     expect(alreadyDone).toBe(true);
     // Presenter would show alert instead of adding again
