@@ -4,6 +4,7 @@ import { observer, useLocalObservable } from "mobx-react-lite";
 import { searchExercisesByName } from "../api/exerciseDbApi";
 import { generateWorkoutPlan } from "../api/glmApi";
 import { planStore } from "../model/planStore";
+import { userStore } from "../model/userStore";
 import { resolvePromise } from "../utils/resolvePromise";
 import { GeneratorView } from "../views/GeneratorView";
 
@@ -113,6 +114,7 @@ export default observer(function GeneratorPresenter() {
       duration={formParams.duration}          // ← Presenter 读了，observer 追踪到
       equipment={formParams.equipment}
       targetMuscle={formParams.targetMuscle}
+      email={userStore.email}
       promise={planPromiseState.promise}
       data={planPromiseState.data}
       error={planPromiseState.error}

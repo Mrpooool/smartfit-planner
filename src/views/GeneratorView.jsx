@@ -13,7 +13,7 @@ export function GeneratorView(props) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.sectionTitle}>👤 Hi, Alex!</Text>
+      <Text style={styles.sectionTitle}>👤 Hi, {props.email}!</Text>
       <Text style={styles.pageTitle}>⚡ Smart Plan Generator</Text>
       {/* TODO: form inputs */}
 
