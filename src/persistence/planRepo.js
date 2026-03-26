@@ -4,6 +4,7 @@
 //   - planStore.ready gates the root layout (nothing meaningful renders until loaded)
 //   - onSnapshot provides live updates across devices (A+ criterion)
 
+import { action } from "mobx";
 import { doc, setDoc, getDoc, onSnapshot } from "firebase/firestore";
 import { db } from "./firebaseConfig";
 import { planStore } from "../model/planStore";
@@ -39,18 +40,18 @@ export function connectToPersistence(uid, watchFunction) {
     }
   }
 
-  function applyDataFromSnapshotACB(docSnap) {
+  const applyDataFromSnapshotACB = action(function applyDataFromSnapshotACB(docSnap) {
     applyRemote = true;
     const exists = typeof docSnap.exists === "function" ? docSnap.exists() : !!docSnap.exists;
     const data = exists ? (docSnap.data() || {}) : {};
     planStore.savedPlans = Array.isArray(data.savedPlans) ? data.savedPlans : [];
     planStore.ready = true;
     applyRemote = false;
-  }
+  });
 
-  function logErrorACB(err) {
+  const logErrorACB = action(function logErrorACB(err) {
     console.error("Firestore read failed:", err);
     planStore.savedPlans = [];
     planStore.ready = true;
-  }
+  });
 }
