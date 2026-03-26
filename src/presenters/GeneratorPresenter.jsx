@@ -50,7 +50,7 @@ export default observer(function GeneratorPresenter() {
     };
 
     planStore.setCurrentPlan(fullPlan);
-    router.push("/details");
+    router.replace("/plan");
     return fullPlan;
   }
 
