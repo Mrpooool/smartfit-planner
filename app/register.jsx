@@ -1,9 +1,9 @@
 import { Redirect } from "expo-router";
 import { observer } from "mobx-react-lite";
 import { userStore } from "../src/model/userStore";
-import LoginPresenter from "../src/presenters/LoginPresenter";
+import RegisterPresenter from "../src/presenters/RegisterPresenter";
 
-export default observer(function LoginPage() {
+export default observer(function RegisterPage() {
   if (!userStore.ready) {
     return null;
   }
@@ -12,5 +12,5 @@ export default observer(function LoginPage() {
     return <Redirect href="/(tabs)" />;
   }
 
-  return <LoginPresenter />;
+  return <RegisterPresenter />;
 });
