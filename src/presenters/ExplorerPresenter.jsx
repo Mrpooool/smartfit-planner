@@ -1,11 +1,11 @@
+import { observer } from "mobx-react-lite";
 import { useEffect, useState } from "react";
 import { FlatList } from "react-native";
-import { observer } from "mobx-react-lite";
 import { getExercisesByMuscle } from "../api/exerciseDbApi";
-import { ExplorerView } from "../views/ExplorerView";
-import { ExerciseCardView } from "../views/ExerciseCardView";
-import { AsyncStateView } from "../views/common/AsyncStateView";
 import { resolvePromise } from "../utils/resolvePromise";
+import { ExerciseCardView } from "../views/ExerciseCardView";
+import { ExplorerView } from "../views/ExplorerView";
+import { AsyncStateView } from "../views/common/AsyncStateView";
 
 const FILTERS = ["all", "chest", "upper legs", "back"];
 const DEFAULT_FILTER = "chest";
@@ -65,6 +65,7 @@ export default observer(function ExplorerPresenter() {
     };
     const request = getExercisesByMuscle(resolveApiMuscle(muscle)).then(
       function normalizeResultsCB(results) {
+        console.log("raw exercise result", results[0]);
         return normalizeExerciseList(results);
       }
     );
@@ -182,12 +183,17 @@ function normalizeExerciseCB(exercise) {
   const instructions = Array.isArray(exercise.instructions)
     ? exercise.instructions.join(" ")
     : exercise.instructions || "";
+  const imageUrl =
+    exercise.gifUrl ||
+    exercise.imageUrl ||
+    exercise.image ||
+    "";
 
   return {
     id: String(exercise.id),
     name: exercise.name,
     targetMuscle: exercise.target || exercise.targetMuscle || "Unknown",
-    gifUrl: exercise.gifUrl || "",
+    gifUrl: imageUrl,
     instructions: instructions,
     sets: 3,
     reps: 10,

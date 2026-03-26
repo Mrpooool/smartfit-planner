@@ -1,8 +1,7 @@
-// ExerciseDB via RapidAPI — provides GIFs, muscle group data, and exercise details.
-// TODO: Replace with your own key from https://rapidapi.com/justin-WFnsXH_t6/api/exercisedb
+// ExerciseDB via RapidAPI - provides GIFs, muscle group data, and exercise details.
 
 const BASE_URL = "https://exercisedb.p.rapidapi.com";
-const RAPIDAPI_KEY = "YOUR_RAPIDAPI_KEY";
+const RAPIDAPI_KEY = process.env.EXPO_PUBLIC_RAPIDAPI_KEY;
 
 const headers = {
   "X-RapidAPI-Key": RAPIDAPI_KEY,
@@ -10,7 +9,7 @@ const headers = {
 };
 
 /**
- * Search exercises by name — used to enrich GLM output with GIFs.
+ * Search exercises by name.
  * @param {string} name
  * @returns {Promise<Object[]>}
  */
@@ -24,13 +23,13 @@ export async function searchExercisesByName(name) {
 }
 
 /**
- * Get exercises by target muscle group — used in the Explorer screen.
+ * Get exercises by body part for the Explorer screen.
  * @param {string} muscle - e.g. "chest", "back", "upper legs"
  * @returns {Promise<Object[]>}
  */
 export async function getExercisesByMuscle(muscle) {
   const response = await fetch(
-    `${BASE_URL}/exercises/target/${encodeURIComponent(muscle)}?limit=20`,
+    `${BASE_URL}/exercises/bodyPart/${encodeURIComponent(muscle)}?limit=20`,
     { headers }
   );
   if (!response.ok) throw new Error(`ExerciseDB error: ${response.status}`);
@@ -38,11 +37,11 @@ export async function getExercisesByMuscle(muscle) {
 }
 
 /**
- * Get all available target muscle group names — used to populate filter chips.
+ * Get all available body part names.
  * @returns {Promise<string[]>}
  */
 export async function getTargetMuscleList() {
-  const response = await fetch(`${BASE_URL}/exercises/targetList`, { headers });
+  const response = await fetch(`${BASE_URL}/exercises/bodyPartList`, { headers });
   if (!response.ok) throw new Error(`ExerciseDB error: ${response.status}`);
   return response.json();
 }
