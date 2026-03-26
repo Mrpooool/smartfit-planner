@@ -2,7 +2,7 @@ import { router } from "expo-router";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
-export function LoginView(props) {
+export function RegisterView(props) {
   const [email,setemail]=useState("")
   const [password,setpassword]=useState("")
   function emailACB(text){
@@ -11,11 +11,11 @@ export function LoginView(props) {
   function passwordACB(text){
     setpassword(text)
   }
-  function loginACB(){
-    props.onLogin(email,password)
-  }
   function registerACB(){
-    router.push('/register')
+    props.onRegister(email,password)
+  }
+  function backACB(){
+    router.push('/login')
   }
   return (
     <View style={styles.container}>
@@ -33,11 +33,11 @@ export function LoginView(props) {
                 onChangeText={passwordACB}
                 secureTextEntry={true}
         />
-        <Pressable onPress={loginACB}>
-          <Text>Login</Text>
-        </Pressable>
         <Pressable onPress={registerACB}>
-          <Text>New user? Create an account</Text>
+          <Text>Register</Text>
+        </Pressable>
+        <Pressable onPress={backACB}>
+          <Text>back to login</Text>
         </Pressable>
     </View>
   );
