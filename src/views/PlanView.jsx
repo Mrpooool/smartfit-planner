@@ -20,6 +20,7 @@ export function PlanView({
   onPressExercise,
   onRenamePlan,
   onDeletePlan,
+  previewMode = false,
 }) {
   if (!plan) {
     return (
@@ -52,7 +53,9 @@ export function PlanView({
           <Text style={styles.exerciseName}>
             {index + 1}. {exercise.name}
           </Text>
-          <Text style={styles.targetMuscle}>Target: {exercise.targetMuscle}</Text>
+          <Text style={styles.targetMuscle}>
+            Target: {exercise.targetMuscle}  |  Equipment: {exercise.equipment || "Bodyweight"}
+          </Text>
         </TouchableOpacity>
 
         {/* Editable Sets & Reps */}
@@ -81,13 +84,12 @@ export function PlanView({
           </View>
         </View>
 
-        {/* Instructions */}
-        {exercise.instructions ? (
-          <Text style={styles.instructions}>📝 {exercise.instructions}</Text>
-        ) : null}
       </View>
     );
   }
+
+  const today = new Date().toISOString().split("T")[0];
+  const isCompletedToday = plan ? (plan.completedDates || []).includes(today) : false;
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -105,17 +107,30 @@ export function PlanView({
       {(plan.exercises || []).map(renderExerciseCB)}
 
       {/* Action Buttons */}
-      <TouchableOpacity style={styles.saveButton} onPress={onSavePlan}>
-        <Text style={styles.buttonText}>⭐  SAVE PLAN TO LIBRARY</Text>
-      </TouchableOpacity>
+      {previewMode ? (
+        <TouchableOpacity style={styles.saveButton} onPress={onSavePlan}>
+          <Text style={styles.buttonText}>➕  ADD TO MY PLAN</Text>
+        </TouchableOpacity>
+      ) : (
+        <>
+          <TouchableOpacity style={styles.saveButton} onPress={onSavePlan}>
+            <Text style={styles.buttonText}>⭐  SAVE PLAN TO LIBRARY</Text>
+          </TouchableOpacity>
 
-      <TouchableOpacity style={styles.completeButton} onPress={onMarkCompleted}>
-        <Text style={styles.buttonText}>✅  MARK AS COMPLETED</Text>
-      </TouchableOpacity>
+          <TouchableOpacity 
+            style={isCompletedToday ? styles.completeButtonDisabled : styles.completeButton} 
+            onPress={onMarkCompleted}
+          >
+            <Text style={isCompletedToday ? styles.buttonTextDisabled : styles.buttonText}>
+              {isCompletedToday ? "✅  COMPLETED TODAY" : "✅  MARK AS COMPLETED"}
+            </Text>
+          </TouchableOpacity>
 
-      <TouchableOpacity style={styles.deleteButton} onPress={onDeletePlan}>
-        <Text style={styles.deleteButtonText}>🗑️  Delete Plan</Text>
-      </TouchableOpacity>
+          <TouchableOpacity style={styles.deleteButton} onPress={onDeletePlan}>
+            <Text style={styles.deleteButtonText}>🗑️  Delete Plan</Text>
+          </TouchableOpacity>
+        </>
+      )}
     </ScrollView>
   );
 }
@@ -180,6 +195,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#10b981", padding: 16, borderRadius: 12,
     alignItems: "center", marginTop: 12,
   },
+  completeButtonDisabled: {
+    backgroundColor: "#d1d5db", padding: 16, borderRadius: 12,
+    alignItems: "center", marginTop: 12,
+  },
+  buttonTextDisabled: { color: "#6b7280", fontWeight: "bold", fontSize: 15 },
   deleteButton: {
     backgroundColor: "transparent", padding: 16, borderRadius: 12,
     alignItems: "center", marginTop: 12, borderWidth: 1, borderColor: "#ef4444",

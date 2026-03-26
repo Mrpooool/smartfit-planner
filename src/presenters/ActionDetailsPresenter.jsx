@@ -4,14 +4,16 @@ import { planStore } from "../model/planStore";
 import { ActionDetailsView } from "../views/ActionDetailsView";
 
 export default observer(function ActionDetailsPresenter() {
-  const { id } = useLocalSearchParams();
+  const { id, source } = useLocalSearchParams();
   const index = parseInt(id, 10);
   
-  if (!planStore.currentPlan || isNaN(index) || !planStore.currentPlan.exercises[index]) {
+  const targetPlan = source === 'generated' ? planStore.generatedPlan : planStore.currentPlan;
+  
+  if (!targetPlan || isNaN(index) || !targetPlan.exercises[index]) {
     return null;
   }
 
-  const exercise = planStore.currentPlan.exercises[index];
+  const exercise = targetPlan.exercises[index];
 
   return <ActionDetailsView exercise={exercise} />;
 });

@@ -4,6 +4,9 @@ const model = {
   /** @type {import('../types/workout').WorkoutPlan | null} */
   currentPlan: null,
 
+  /** @type {import('../types/workout').WorkoutPlan | null} */
+  generatedPlan: null,
+
   /** @type {import('../types/workout').WorkoutPlan[]} */
   savedPlans: [],
 
@@ -11,6 +14,10 @@ const model = {
 
   setCurrentPlan: action(function setCurrentPlan(plan) {
     this.currentPlan = plan;
+  }),
+
+  setGeneratedPlan: action(function setGeneratedPlan(plan) {
+    this.generatedPlan = plan;
   }),
 
   addSavedPlan: action(function addSavedPlan(plan) {
@@ -30,11 +37,20 @@ const model = {
   }),
 
   markCompleted: action(function markCompleted(planId, date) {
-    const plan = this.savedPlans.find(function matchIdCB(p) {
-      return p.id === planId;
+    // 1. Rebuild savedPlans array to trigger MobX observers reliably
+    this.savedPlans = this.savedPlans.map(function mapPlanCB(p) {
+      if (p.id === planId) {
+        return { ...p, completedDates: [...(p.completedDates || []), date] };
+      }
+      return p;
     });
-    if (plan !== undefined) {
-      plan.completedDates = [...(plan.completedDates || []), date];
+
+    // 2. Rebuild currentPlan reference to trigger UI React components
+    if (this.currentPlan && this.currentPlan.id === planId) {
+      this.currentPlan = {
+        ...this.currentPlan,
+        completedDates: [...(this.currentPlan.completedDates || []), date]
+      };
     }
   }),
 

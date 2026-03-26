@@ -2,7 +2,7 @@
 // TODO: Replace with your own key from https://rapidapi.com/justin-WFnsXH_t6/api/exercisedb
 
 const BASE_URL = "https://exercisedb.p.rapidapi.com";
-const RAPIDAPI_KEY = "YOUR_RAPIDAPI_KEY";
+const RAPIDAPI_KEY = process.env.EXPO_PUBLIC_RAPIDAPI_KEY;
 
 const headers = {
   "X-RapidAPI-Key": RAPIDAPI_KEY,
@@ -16,7 +16,7 @@ const headers = {
  */
 export async function searchExercisesByName(name) {
   const response = await fetch(
-    `${BASE_URL}/exercises/name/${encodeURIComponent(name.toLowerCase())}?limit=5`,
+    `${BASE_URL}/exercises/name/${encodeURIComponent(name.toLowerCase())}?offset=0&limit=5`,
     { headers }
   );
   if (!response.ok) throw new Error(`ExerciseDB error: ${response.status}`);
@@ -30,7 +30,7 @@ export async function searchExercisesByName(name) {
  */
 export async function getExercisesByMuscle(muscle) {
   const response = await fetch(
-    `${BASE_URL}/exercises/target/${encodeURIComponent(muscle)}?limit=20`,
+    `${BASE_URL}/exercises/bodyPart/${encodeURIComponent(muscle)}?offset=0&limit=20`,
     { headers }
   );
   if (!response.ok) throw new Error(`ExerciseDB error: ${response.status}`);

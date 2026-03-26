@@ -50,8 +50,8 @@ export default observer(function GeneratorPresenter() {
       exercises: enrichedExercises,
     };
 
-    planStore.setCurrentPlan(fullPlan);
-    router.replace("/plan");
+    planStore.setGeneratedPlan(fullPlan);
+    router.push("/planPreview");
     return fullPlan;
   }
 
@@ -66,6 +66,7 @@ export default observer(function GeneratorPresenter() {
           id: `${exercise.name}-${Date.now()}-${Math.floor(Math.random() * 1000000)}`,
           name: exercise.name,
           targetMuscle: formParams.targetMuscle,
+          equipment: formParams.equipment.length > 0 ? formParams.equipment[0] : "Bodyweight",
           gifUrl: "",
           instructions: "",
           sets: exercise.sets,
@@ -77,6 +78,7 @@ export default observer(function GeneratorPresenter() {
         id: match.id,
         name: exercise.name,
         targetMuscle: formParams.targetMuscle,
+        equipment: match.equipment || "Unknown",
         gifUrl: match.gifUrl,
         instructions: Array.isArray(match.instructions) ? match.instructions.join("\n") : "",
         //把数组里的每一个元素用 \n（换行符） 拼接成一整个长字符串。
@@ -89,6 +91,7 @@ export default observer(function GeneratorPresenter() {
         id: `${exercise.name}-${Date.now()}-${Math.floor(Math.random() * 1000000)}`,
         name: exercise.name,
         targetMuscle: formParams.targetMuscle,
+        equipment: formParams.equipment.length > 0 ? formParams.equipment[0] : "Bodyweight",
         gifUrl: "",
         instructions: "",
         sets: exercise.sets,

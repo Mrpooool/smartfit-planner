@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { userStore } from "../src/model/userStore";
 import { connectAuth } from "../src/persistence/authRepo";
 import { connectToPersistence } from "../src/persistence/planRepo";
+import { GlobalToast } from "../src/views/common/GlobalToast";
 
 export default function RootLayout() {
   useEffect(function onMountACB() {
@@ -35,23 +36,16 @@ export default function RootLayout() {
   }, []);
 
   return (
-    <Stack>
-      <Stack.Screen
-      name="login"
-      options={{ headerShown: false }}
-      />
-      <Stack.Screen
-      name="register"
-      options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="(tabs)"
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="action/[id]"
-        options={{ title: "Action Details", headerBackTitle: "Back" }}
-      />
-    </Stack>
-  )
+    <>
+      <Stack>
+        <Stack.Screen name="login" options={{ headerShown: false }} />
+        <Stack.Screen name="register" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="plan" options={{ title: "Plan" }} />
+        <Stack.Screen name="action/[id]" options={{ title: "Action Details", headerBackTitle: "Back" }} />
+        <Stack.Screen name="planPreview" options={{ title: "Preview Plan", headerBackTitle: "Back" }} />
+      </Stack>
+      <GlobalToast />
+    </>
+  );
 }

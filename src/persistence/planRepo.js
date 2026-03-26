@@ -17,29 +17,6 @@ export function connectToPersistence(uid, watchFunction) {
   const docRef = doc(db, "users", uid, "data", "plans");
   let applyRemote = false; // prevents write-back loop when applying remote data
 
-  getDoc(docRef).then(applyDataFromSnapshotACB).catch(logErrorACB);
-
-  const stopReaction = watchFunction(model2PersistACB, save2FirestoreACB);
-  const stopSnapshot = onSnapshot(docRef, applyDataFromSnapshotACB, logErrorACB);
-
-  return function disconnectFromPersistence() {
-    stopReaction?.();
-    stopSnapshot?.();
-  };
-
-  function model2PersistACB() {
-    return [planStore.savedPlans];
-  }
-
-  async function save2FirestoreACB() {
-    if (!planStore.ready || applyRemote) return;
-    try {
-      await setDoc(docRef, { savedPlans: planStore.savedPlans }, { merge: true });
-    } catch (err) {
-      console.error("Firestore save failed:", err);
-    }
-  }
-
   const applyDataFromSnapshotACB = action(function applyDataFromSnapshotACB(docSnap) {
     applyRemote = true;
     const exists = typeof docSnap.exists === "function" ? docSnap.exists() : !!docSnap.exists;
@@ -54,4 +31,31 @@ export function connectToPersistence(uid, watchFunction) {
     planStore.savedPlans = [];
     planStore.ready = true;
   });
+
+  getDoc(docRef).then(applyDataFromSnapshotACB).catch(logErrorACB);
+
+  const stopReaction = watchFunction(model2PersistACB, save2FirestoreACB);
+  const stopSnapshot = onSnapshot(docRef, applyDataFromSnapshotACB, logErrorACB);
+
+  return function disconnectFromPersistence() {
+    stopReaction?.();
+    stopSnapshot?.();
+  };
+
+  function model2PersistACB() {
+    // Stringify forces MobX to observe deeply, so array lengths and nested field changes trigger the reaction
+    return JSON.stringify(planStore.savedPlans);
+  }
+
+  async function save2FirestoreACB() {
+    if (!planStore.ready || applyRemote) return;
+    try {
+      // Firestore will throw if any nested value is undefined.
+      // Stringify -> Parse automatically removes all undefined values from the object tree.
+      const safePlans = JSON.parse(JSON.stringify(planStore.savedPlans));
+      await setDoc(docRef, { savedPlans: safePlans });
+    } catch (err) {
+      console.error("Firestore save failed:", err);
+    }
+  }
 }
