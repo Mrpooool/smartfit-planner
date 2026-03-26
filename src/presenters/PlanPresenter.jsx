@@ -2,9 +2,9 @@ import { observer } from "mobx-react-lite";
 import { Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { planStore } from "../model/planStore";
-import { PlanDetailView } from "../views/PlanDetailView";
+import { PlanView } from "../views/PlanView";
 
-export default observer(function DetailsPresenter() {
+export default observer(function PlanPresenter() {
   const router = useRouter();
   const plan = planStore.currentPlan;
 
@@ -51,6 +51,11 @@ export default observer(function DetailsPresenter() {
     planStore.renamePlan(newName);
   }
 
+  // ── Open Action Details ──
+  function onPressExerciseACB(index) {
+    router.push(`/action/${index}`);
+  }
+
   // ── Delete plan ──
   function onDeletePlanACB() {
     if (!plan) return;
@@ -73,11 +78,12 @@ export default observer(function DetailsPresenter() {
   }
 
   return (
-    <PlanDetailView
+    <PlanView
       plan={plan}
       onSavePlan={onSavePlanACB}
       onMarkCompleted={onMarkCompletedACB}
       onEditExercise={onEditExerciseACB}
+      onPressExercise={onPressExerciseACB}
       onRenamePlan={onRenamePlanACB}
       onDeletePlan={onDeletePlanACB}
     />
