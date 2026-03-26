@@ -6,19 +6,33 @@ import { connectToPersistence } from "../src/persistence/planRepo";
 import { userStore } from "../src/model/userStore";
 
 export default function RootLayout() {
-  // 1. Listen for Firebase Auth state changes (sets userStore.uid/ready)
   useEffect(function onMountACB() {
+    // 1. Listen for Firebase Auth state changes (sets userStore.uid/ready)
     connectAuth();
-  }, []);
 
-  // 2. When user logs in/out, connect/disconnect Firestore persistence
-  useEffect(function onUidChangeACB() {
-    if (!userStore.uid) return;               // not logged in yet
-    const disconnect = connectToPersistence(userStore.uid, reaction);
-    return function onCleanupACB() {           // logout or uid change → disconnect
-      disconnect();
+    // 2. Use MobX reaction to watch userStore.uid changes.
+    //    This replaces the previous useEffect([userStore.uid]) approach,
+    //    which caused an ESLint exhaustive-deps warning because MobX
+    //    observables are not valid React hook dependencies.
+    let disconnectPersistence = null;
+
+    const stopUidReaction = reaction(
+      () => userStore.uid,                     // data function: track uid
+      (uid) => {                               // effect function: runs when uid changes
+        disconnectPersistence?.();              // clean up previous connection
+        disconnectPersistence = null;
+        if (uid) {
+          disconnectPersistence = connectToPersistence(uid, reaction);
+        }
+      },
+      { fireImmediately: true }                // run once at startup too
+    );
+
+    return function onCleanupACB() {
+      stopUidReaction();
+      disconnectPersistence?.();
     };
-  }, [userStore.uid]);
+  }, []);
 
   return <Stack />;
 }
