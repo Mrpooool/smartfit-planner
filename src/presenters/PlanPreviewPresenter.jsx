@@ -36,6 +36,7 @@ export default observer(function PlanPreviewPresenter() {
       previewMode={true}
       onSavePlan={onAddToPlanACB}
       onPressExercise={onPressExerciseACB}
+      // To be done soon
       onMarkCompleted={() => {}}
       onEditExercise={() => {}}
       onRenamePlan={() => {}}
