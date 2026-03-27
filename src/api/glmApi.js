@@ -49,7 +49,7 @@ export async function generateWorkoutPlan(duration, equipment, targetMuscle) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "glm-4.7-flash",
+      model: "GLM-4-Flash-250414",
       messages,
       temperature: 1,
       response_format: { type: "json_object" },
