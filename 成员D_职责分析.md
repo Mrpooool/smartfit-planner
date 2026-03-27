@@ -1,58 +1,68 @@
 # 成员D 职责分析 - Plan Management + Persistence Owner
 
+> **文档更新：2026-03-27** — 已根据实际代码状态同步所有任务进度
+
 ## 📋 核心职责概览
 
-**主模块：** Details 页 + Firestore 持久化封装
+**主模块：** Plan Preview 页 + Plan 管理页 + Firestore 持久化封装
 **优先级：** 中等（依赖成员B的Store框架）
+**当前状态：** 核心持久化层 ✅ 完成；Plan Preview 页 ✅ 完成；Plan 页 ✅ 完成；Profile 可视化模块 ⏳ 进行中
 
 ---
 
 ## 1. 功能职责清单
 
-### 1.1 Details 页面完整流程
-- **计划编辑**：编辑计划名称、组数/次数、删除动作
-- **计划保存**：将编辑后的计划保存到 Firebase Firestore
-- **完成打卡**：标记计划为"已完成"，触发 Firebase 更新（日期记录）
-- **错误处理**：网络错误时显示重试逻辑、Toast 提示
+### 1.1 Plan 页完整流程 ✅ 已完成
+- **计划编辑**：✅ 编辑计划名称（`renamePlan`）、组数/次数（`updateExerciseField`）
+- **计划保存**：✅ 新计划保存到 Firestore（`addSavedPlan` → reaction → `setDoc`）
+- **完成打卡**：✅ `markCompleted(planId, date)` 记录 ISO 日期到 `completedDates[]`
+- **删除计划**：✅ 二次确认弹窗 + `removeSavedPlan`
+- **跳转动作详情**：✅ `router.push('/action/[id]')` 跳转 Stack 页
+- **错误处理**：✅ 全局 Toast（`uiStore.showToast`）提示操作结果
 
-### 1.2 Firebase 持久化层设计与实现
-- **`firebaseConfig.js`**：Firebase 初始化配置
-- **`authRepo.js`**：编写登出逻辑（登录由成员A负责）
-- **`planRepo.js`**：
-  - `savePlan(uid, plan)` - 保存计划到 Firestore
-  - `deletePlan(uid, planId)` - 删除计划
-  - `markCompleted(uid, planId, date)` - 记录完成日期
-  - `subscribeToPlans(uid, callback)` - **使用 `onSnapshot` 实现实时同步**
+> **实现说明**：该模块落地为 `PlanPresenter.jsx` + `PlanView.jsx`（非原计划的 `DetailsPresenter` + `PlanDetailView`），功能完整覆盖原规划。
 
-### 1.3 Store 接线（关键！）
-- 在应用根入口（`app/_layout.jsx`）调用 `connectToPersistence(uid, reaction)`
-- 实现 **MobX `reaction`**，监听 `planStore.savedPlans` 的变化
-- 当变化时，自动触发 `planRepo.savePlan()` 写入 Firestore
-- **注意：** 不直接修改 Store，所有变更必须通过成员B定义的 action
+### 1.2 Firebase 持久化层设计与实现 ✅ 已完成
+- **`firebaseConfig.js`**：✅ Firebase 初始化配置，读取 `.env.local` 中的 8 个环境变量
+- **`authRepo.js`**：✅ `connectAuth` / `loginUser` / `registerUser` / `logoutUser` 全部实现
+- **`planRepo.js`**：✅ 以 `connectToPersistence(uid, reactionFn)` 单函数封装全部持久化逻辑
+  - 首次连接：`getDoc()` 加载 `savedPlans`
+  - 后续同步：`onSnapshot()` 监听 Firestore 实时变更
+  - 写回：MobX `reaction` 监听 `savedPlans` JSON，变化时 `setDoc()` 写入
+  - 防循环：`applyRemote` 标志防止远程数据应用时触发新写入
+  - 返回 `disconnectFn`，由 `_layout.jsx` 在登出/uid 变更时调用
+
+> **与原规划的差异**：`integration.js` 未作为独立文件创建，持久化逻辑全部内聚在 `planRepo.js` 中，更简洁。
+
+### 1.3 Store 接线 ✅ 已完成
+- ✅ 在 `app/_layout.jsx` 中通过 `useEffect` + `reaction(() => userStore.uid, ...)` 监听 uid 变化
+- ✅ uid 存在时调用 `connectToPersistence(uid, reaction)`，登出时调用返回的 `disconnectFn`
+- ✅ 所有变更均通过成员B定义的 action（`addSavedPlan` / `updateSavedPlan` / `removeSavedPlan` / `markCompleted`）
 
 ---
 
-## 2. 需要修改/创建的文件清单
+## 2. 文件清单与交付状态
 
 ### 核心文件（D责任）
 
-| 文件路径 | 类型 | 职责 |
-|---------|------|------|
-| `src/persistence/firebaseConfig.js` | 创建 | Firebase 初始化 |
-| `src/persistence/authRepo.js` | 创建 | 登出逻辑（登录由成员A完成） |
-| `src/persistence/planRepo.js` | 创建 | Firestore CRUD + `onSnapshot` |
-| `src/presenters/DetailsPresenter.jsx` | 创建 | 连接 planStore + 视图逻辑 |
-| `src/views/PlanDetailView.jsx` | 创建 | UI 渲染（只接收 props） |
-| `app/details.jsx` | 创建 | 路由入口（`export default DetailsPresenter`） |
+| 文件路径 | 状态 | 落地说明 |
+|---------|------|---------|
+| `src/persistence/firebaseConfig.js` | ✅ 完成 | Firebase 初始化，读取 .env.local |
+| `src/persistence/authRepo.js` | ✅ 完成 | 含登录/注册/登出/Auth 监听 |
+| `src/persistence/planRepo.js` | ✅ 完成 | `connectToPersistence` + `onSnapshot` + `reaction` 写回 |
+| `src/presenters/PlanPresenter.jsx` | ✅ 完成 | 原名 `DetailsPresenter`，已实现全部计划管理逻辑 |
+| `src/views/PlanView.jsx` | ✅ 完成 | 原名 `PlanDetailView`，含编辑表单和操作按钮 |
+| `app/_layout.jsx` | ✅ 完成 | `connectToPersistence` 已在此接线 |
+| `app/details.jsx` | ⏳ 桩文件 | 路由文件已创建，内容待完善（Profile → 计划详情跳转路径） |
 
-### 协作涉及的文件（需对齐）
+### 协作涉及的文件（已对齐 ✅）
 
-| 文件路径 | 当前Owner | 对齐内容 |
+| 文件路径 | 当前Owner | 对齐状态 |
 |---------|----------|---------|
-| `src/model/planStore.js` | 成员B | 确认 Store 数据结构、action 签名 |
-| `src/model/userStore.js` | 成员B | 确认 `uid` / `isAuthenticated` 字段 |
-| `app/_layout.jsx` | *需协商* | 在此接线 `connectToPersistence()` |
-| `src/views/common/AsyncStateView.jsx` | *共享* | Details 页应用此组件显示加载/错误状态 |
+| `src/model/planStore.js` | 成员B | ✅ 已对齐：`updateSavedPlan`/`renamePlan`/`updateExerciseField` 均已实现 |
+| `src/model/userStore.js` | 成员B | ✅ 已对齐：`uid`/`email`/`ready` |
+| `src/model/uiStore.js` | 新增（D/共享） | ✅ `showToast(message, type, duration)` 供全局 Toast 使用 |
+| `src/views/common/GlobalToast.jsx` | 新增（D/共享） | ✅ 全局 Toast 组件，自动订阅 `uiStore` |
 
 ---
 
@@ -193,50 +203,49 @@ export default observer(function DetailsPresenter({ route }) {
 
 ---
 
-## 5. 开发顺序建议
+## 5. 开发进度记录
 
-### Day 1
-- [ ] 与成员B同步 Store 合同（数据结构 + action 签名）
-- [ ] 创建 `firebaseConfig.js`（Firebase SDK 初始化）
-- [ ] 创建 `planRepo.js` 骨架（函数签名）
+### 已完成阶段
 
-### Day 2
-- [ ] 实现 `planRepo.js` 的 CRUD 方法
-- [ ] 实现 `authRepo.js`（登出逻辑）
-- [ ] 实现 `connectToPersistence()` 和 reaction
-- [ ] 与成员C对齐自定义计划流程
+| 阶段 | 完成内容 |
+|------|---------|
+| ✅ 阶段1：Store 对齐 | 与成员B确认 planStore/userStore 数据结构与 action 签名 |
+| ✅ 阶段2：持久化层 | `firebaseConfig.js` + `authRepo.js` + `planRepo.js` 全部实现，含 `onSnapshot` 实时同步 |
+| ✅ 阶段3：Plan 页 | `PlanPresenter.jsx` + `PlanView.jsx` 完整实现（编辑/保存/打卡/删除） |
+| ✅ 阶段4：全局 Toast | `uiStore.js` + `GlobalToast.jsx` 新增，统一全应用操作反馈 |
+| ✅ 阶段5：根布局接线 | `app/_layout.jsx` 完整接线 Auth 监听 + Persistence 连接/断开 |
 
-### Day 3
-- [ ] 创建 `DetailsPresenter.jsx`
-- [ ] 创建 `PlanDetailView.jsx`（UI 组件）
-- [ ] 创建 `app/details.jsx` 路由入口
-- [ ] 集成测试：端到端走查 Details 页流程
+### 待完成任务 ⏳
 
-### Day 4-5
-- [ ] 错误处理与边界情况测试
-- [ ] 性能优化（防抖、缓存）
-- [ ] 与 A/B/C 联调
+- [ ] **Profile 打卡日历**：安装 `react-native-calendars`，实现 `CalendarView.jsx`（读取 `completedDates`）
+- [ ] **Profile 周训练量图表**：安装 `react-native-chart-kit`，实现 `ChartView.jsx`（按周统计 `completedDates`）
+- [ ] **Explorer 自定义计划保存**：与成员C协作，完成 "View / Save" 按钮 → `addSavedPlan` 持久化流程
+- [ ] **`app/details.jsx` 路由完善**：Profile → 计划详情 Stack 跳转（`onStartPlan` 回调接线）
+- [ ] **端到端联调**：登录 → 生成计划 → 保存 → 打卡 → Profile 可视化完整走查
 
 ---
 
 ## 6. 成员D的交付物清单
 
-✅ 代码
-- `src/persistence/firebaseConfig.js`
-- `src/persistence/authRepo.js`
-- `src/persistence/planRepo.js`（含 onSnapshot）
-- `src/persistence/integration.js`（connectToPersistence）
-- `src/presenters/DetailsPresenter.jsx`
-- `src/views/PlanDetailView.jsx`
-- `app/details.jsx`
+### 代码
+- ✅ `src/persistence/firebaseConfig.js`
+- ✅ `src/persistence/authRepo.js`（含 connectAuth / loginUser / registerUser / logoutUser）
+- ✅ `src/persistence/planRepo.js`（含 onSnapshot + reaction 双向同步，`connectToPersistence` 内聚）
+- ✅ `src/model/uiStore.js`（全局 Toast 状态，新增）
+- ✅ `src/presenters/PlanPresenter.jsx`（原规划 `DetailsPresenter`，已完整实现）
+- ✅ `src/views/PlanView.jsx`（原规划 `PlanDetailView`，已完整实现）
+- ✅ `src/views/common/GlobalToast.jsx`（全局 Toast 组件，新增）
+- ⏳ `src/views/CalendarView.jsx`（占位，待集成 react-native-calendars）
+- ⏳ `src/views/ChartView.jsx`（占位，待集成 react-native-chart-kit）
+- ⏳ `app/details.jsx`（桩文件，待完善 Profile → 详情路由）
 
-✅ 文档
-- Firestore Security Rules（如何限制用户只能访问自己的计划）
-- API 错误处理方案文档
+### 文档
+- ⏳ Firestore Security Rules（如何限制用户只能访问自己的计划）
+- ⏳ API 错误处理方案文档
 
-✅ 测试
-- `planRepo.js` 单元测试（mock Firestore）
-- `DetailsPresenter.jsx` 集成测试
+### 测试
+- ⏳ `planRepo.js` 单元测试（mock Firestore）— 目录已创建：`src/persistence/__tests__/planRepo.test.js`
+- ⏳ `PlanPresenter.jsx` 集成测试 — 目录已创建：`src/presenters/__tests__/DetailsPresenter.test.js`
 
 ---
 
@@ -253,8 +262,10 @@ export default observer(function DetailsPresenter({ route }) {
 
 ## 📌 审批清单
 
-- [ ] 与成员B确认 Store 数据结构与 action 签名
-- [ ] 与成员A确认登出流程交互
-- [ ] 与成员C确认自定义计划数据流
+- [x] 与成员B确认 Store 数据结构与 action 签名（`planStore` + `userStore` 已稳定）
+- [x] 与成员A确认登出流程交互（`logoutUser` 已实现，`_layout.jsx` 已接线断开监听）
+- [ ] 与成员C确认自定义计划数据流（Explorer "View / Save" 保存路径待协商）
 - [ ] PlanRepo API 文档通过审查
 - [ ] Security Rules PR 通过 review
+- [ ] react-native-calendars 安装 + CalendarView 完整实现
+- [ ] react-native-chart-kit 安装 + ChartView 完整实现

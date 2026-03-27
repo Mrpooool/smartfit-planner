@@ -49,9 +49,9 @@
   * **GLM-4.7-flash (智谱 AI):** 负责处理用户输入的条件，生成结构化的 JSON 训练计划。
   * **ExerciseDB (RapidAPI):** 根据 AI 生成的动作名称，匹配具体的肌群数据和教学 GIF。
 * **用户可见第三方组件 (User-visible Third-party Components):**
-  * **肌群选择器:** `@react-native-picker/picker` — Home 页目标肌群 Picker 下拉选择器
-  * **图表:** `react-native-chart-kit` — 用于 Profile 页的周训练量柱状图
-  * **日历:** `react-native-calendars` — 用于 Profile 页的训练打卡日历视图
+  * **肌群选择器:** `@react-native-picker/picker` ✅ 已集成 — Home 页目标肌群 Picker 下拉选择器
+  * **图表:** `react-native-chart-kit` ⏳ 待安装 — 用于 Profile 页的周训练量柱状图（ChartView.jsx 已创建占位，依赖未安装）
+  * **日历:** `react-native-calendars` ⏳ 待安装 — 用于 Profile 页的训练打卡日历视图（CalendarView.jsx 已创建占位，依赖未安装）
 
 ---
 
@@ -71,48 +71,57 @@
 ```
 smartfit-planner/
 ├── app/                        # Expo Router 路由层（保持在项目根目录，不迁移到 src）
-│   ├── _layout.jsx             # Stack 根布局：(tabs) + action/[id]；单 useEffect + MobX reaction 监听 uid
+│   ├── _layout.jsx             # ✅ Stack 根布局：(tabs) + action/[id]；单 useEffect + MobX reaction 监听 uid
+│   ├── index.jsx               # ✅ 条件重定向：uid ? /(tabs) : /login
 │   ├── (tabs)/
-│   │   ├── _layout.jsx         # 4 个 Tab：Home / Explore / Plan / Profile
-│   │   ├── index.jsx           # → GeneratorPresenter
-│   │   ├── explore.jsx         # → ExplorerPresenter
-│   │   ├── plan.jsx            # → PlanPresenter（当前计划详情 Tab）
-│   │   └── profile.jsx         # → ProfilePresenter
+│   │   ├── _layout.jsx         # ✅ 4 个 Tab：Home / Explore / Plan / Profile
+│   │   ├── index.jsx           # ✅ → GeneratorPresenter
+│   │   ├── explore.jsx         # ✅ → ExplorerPresenter
+│   │   ├── plan.jsx            # ✅ → PlanPresenter（当前计划详情 Tab）
+│   │   └── profile.jsx         # ✅ → ProfilePresenter
 │   ├── action/
-│   │   └── [id].jsx            # → ActionDetailsPresenter（动作 GIF + 说明 Stack 页）
-│   └── login.jsx               # → LoginPresenter
+│   │   └── [id].jsx            # ✅ → ActionDetailsPresenter（动作 GIF + 说明 Stack 页）
+│   ├── planPreview.jsx         # ✅ → PlanPreviewPresenter（AI 生成结果预览页，Stack 页）
+│   ├── details.jsx             # ⏳ 计划详情 Stack 页（当前为桩，待完善）
+│   ├── login.jsx               # ✅ → LoginPresenter
+│   └── register.jsx            # ✅ → RegisterPresenter
 └── src/
     ├── types/                  # 共享数据结构定义（Day 1 最小合同）
-    │   └── workout.js          # WorkoutPlan、Exercise 对象结构（JSDoc 注释说明字段）
+    │   └── workout.js          # ✅ WorkoutPlan、Exercise 对象结构（JSDoc 注释说明字段）
     ├── model/                  # POJO + MobX store（仅状态与 action/flow）
-    │   ├── planStore.js
-    │   └── userStore.js
+    │   ├── planStore.js        # ✅ 含 currentPlan/generatedPlan/savedPlans + 完整 actions
+    │   ├── userStore.js        # ✅ uid/email/ready + setUser/clearUser
+    │   └── uiStore.js          # ✅ 全局 UI 状态（Toast）：showToast(message, type, duration)
     ├── persistence/            # Firebase 持久化（仅供 model 调用）
-    │   ├── firebaseConfig.js
-    │   ├── authRepo.js
-    │   └── planRepo.js
+    │   ├── firebaseConfig.js   # ✅ Firebase 初始化（读取 .env 配置）
+    │   ├── authRepo.js         # ✅ connectAuth / loginUser / registerUser / logoutUser
+    │   └── planRepo.js         # ✅ connectToPersistence (onSnapshot 实时同步 + reaction 写回)
     ├── api/                    # 外部 API 封装
-    │   ├── glmApi.js
-    │   └── exerciseDbApi.js
+    │   ├── glmApi.js           # ✅ generateWorkoutPlan(duration, equipment, targetMuscle)
+    │   └── exerciseDbApi.js    # ✅ searchExercisesByName / getExercisesByMuscle / getTargetMuscleList
     ├── presenters/             # observer 连接 model 和 view
-    │   ├── GeneratorPresenter.jsx   # 展开传独立 props（duration/equipment/targetMuscle/promise/data/error）
-    │   ├── PlanPresenter.jsx        # 计划详情：保存/完成打卡/编辑组数次数/跳转动作详情/删除
-    │   ├── ActionDetailsPresenter.jsx  # 动作详情：从 URL 参数读 index，展示 GIF + 说明
-    │   ├── ExplorerPresenter.jsx
-    │   ├── ProfilePresenter.jsx
-    │   └── LoginPresenter.jsx
+    │   ├── GeneratorPresenter.jsx      # ✅ 展开传独立 props；调用 GLM → ExerciseDB 富化
+    │   ├── PlanPresenter.jsx           # ✅ 计划详情：保存/完成打卡/编辑组数次数/跳转动作详情/删除/重命名
+    │   ├── PlanPreviewPresenter.jsx    # ✅ AI 生成计划预览（previewMode=true，保存到 savedPlans）
+    │   ├── ActionDetailsPresenter.jsx  # ✅ 动作详情：从路由参数读 exercise，展示 GIF + 说明
+    │   ├── ExplorerPresenter.jsx       # ✅ 动作搜索/肌群过滤/添加到自定义计划
+    │   ├── ProfilePresenter.jsx        # ✅ 已保存计划列表/用户信息/登出
+    │   ├── LoginPresenter.jsx          # ✅ 登录逻辑
+    │   └── RegisterPresenter.jsx       # ✅ 注册逻辑（含错误处理和本地 loading 状态）
     └── views/                  # 纯渲染组件（只收 props）
         ├── common/
-        │   └── AsyncStateView.jsx   # 通用 loading/error/empty
-        ├── GeneratorView.jsx        # 接收展开的独立 props（非整体 formParams 对象）
-        ├── PlanView.jsx             # 计划列表 + 操作按钮
-        ├── ActionDetailsView.jsx    # 单个动作 GIF + 说明
-        ├── ExplorerView.jsx
-        ├── ExerciseCardView.jsx
-        ├── ProfileView.jsx
-        ├── LoginView.jsx
-        ├── CalendarView.jsx
-        └── ChartView.jsx
+        │   ├── AsyncStateView.jsx      # ✅ 通用 loading/error/empty
+        │   └── GlobalToast.jsx         # ✅ 全局 Toast 提示（自动订阅 uiStore）
+        ├── GeneratorView.jsx           # ✅ 接收展开的独立 props（非整体 formParams 对象）
+        ├── PlanView.jsx                # ✅ 计划列表 + 操作按钮（内含编辑表单）
+        ├── ActionDetailsView.jsx       # ✅ 单个动作 GIF + 说明
+        ├── ExplorerView.jsx            # ✅ 搜索框 + 肌群过滤器 + 动作列表
+        ├── ExerciseCardView.jsx        # ✅ 动作卡片（GIF + Add/Added 切换按钮）
+        ├── ProfileView.jsx             # ✅ 用户档案（计划列表、登出按钮）
+        ├── LoginView.jsx               # ✅ 登录表单
+        ├── RegisterView.jsx            # ✅ 注册表单
+        ├── CalendarView.jsx            # ⏳ 训练打卡日历（占位组件，待集成 react-native-calendars）
+        └── ChartView.jsx               # ⏳ 周训练量柱状图（占位组件，待集成 react-native-chart-kit）
 ```
 
 最小化原则（避免过度设计）：
@@ -160,8 +169,8 @@ smartfit-planner/
 
 | API | 错误场景 | 降级策略 |
 |-----|---------|---------|
-| GLM-5 | 超时 / 服务不可用 | 显示错误提示 + 重试按钮；引导用户使用 Explorer 手动组建计划 |
-| GLM-5 | 返回格式异常 | 捕获解析错误，提示用户重新生成 |
+| GLM-4.7-flash | 超时 / 服务不可用 | 显示错误提示 + 重试按钮；引导用户使用 Explorer 手动组建计划 |
+| GLM-4.7-flash | 返回格式异常 | 捕获解析错误，提示用户重新生成 |
 | ExerciseDB | 超时 / 服务不可用 | 显示动作名称和文字说明，GIF 位置显示占位图 + "加载失败" |
 | ExerciseDB | 未匹配到动作 | 显示 "未找到对应动作演示"，不阻断计划展示 |
 | Firebase | 写入失败 | Toast 提示 + 本地暂存，网络恢复后重试 |
@@ -240,7 +249,44 @@ Page to browse the ExerciseDB database, with an option to add exercises to a cus
 +---------------------------------------+
 ```
 
-### **7.3. Plan Tab + Action Details**
+### **7.3. Plan Preview (AI Generated Result)**
+
+AI 生成完成后自动跳转此 Stack 页，用户预览计划内容、查看各动作详情，并可一键存入计划库。
+
+```
++---------------------------------------+
+| ⬅️ Back   AI Generated Plan           |
+|                                       |
+| Plan Name                             |
+| [ 30-Min Full Body Blast ]            |
+|                                       |
+| 1. Push-ups                           |
+| 🖼️ [GIF Placeholder]                  |
+| Target: Chest  |  Equipment: None     |
+| Sets [3]  Reps [12]      (← tappable)|
+|                                       |
+| 2. Bodyweight Squats                  |
+| 🖼️ [GIF Placeholder]                  |
+| Target: Legs   |  Equipment: None     |
+| Sets [3]  Reps [15]      (← tappable)|
+|                                       |
+| 3. Plank                              |
+| 🖼️ [GIF Placeholder]                  |
+| Target: Core   |  Equipment: None     |
+| Sets [3]  Reps [60s]     (← tappable)|
+|                                       |
+| 🟣 [ ➕  ADD TO MY PLAN ]             |
+|                                       |
+| * Interaction Note:                   |
+|   Tap exercise row → /action/[idx]    |
+|   ?source=generated (Stack 详情页)    |
+|   ADD TO MY PLAN → addSavedPlan()    |
+|   + Toast "🎉 Plan added!" +         |
+|   router.replace(/(tabs)/plan)       |
++---------------------------------------+
+```
+
+### **7.4. Plan Tab + Action Details**
 
 Plan Tab 展示当前计划内容，点击动作卡片跳转 Stack 页查看 GIF 和说明。
 
@@ -267,7 +313,7 @@ Plan Tab 展示当前计划内容，点击动作卡片跳转 Stack 页查看 GIF
 +---------------------------------------+
 ```
 
-### **7.4. Profile & Saved Plans**
+### **7.5. Profile & Saved Plans**
 
 Data persistence showcase. Lists saved plans and visualizes workout progress.
 
@@ -303,7 +349,7 @@ Data persistence showcase. Lists saved plans and visualizes workout progress.
 +---------------------------------------+
 ```
 
-### **7.5. Login / Register**
+### **7.6. Login / Register**
 
 ```
 +---------------------------------------+
@@ -334,9 +380,9 @@ Data persistence showcase. Lists saved plans and visualizes workout progress.
 | 成员 | 功能模块 | 职责范围 |
 |------|---------|---------|
 | 成员 A | **Auth + Profile** | 登录/注册完整流程、Profile 页（已保存计划列表、日历打卡、周图表、登出） |
-| 成员 B | **Smart Generator + Store Owner** | Home 页完整流程：条件输入 → GLM-5 API 调用 → Skeleton UI → 计划结果展示；主导 MobX Store 结构定义与演进 |
+| 成员 B | **Smart Generator + Store Owner** | Home 页完整流程：条件输入 → GLM-4.7-flash API 调用 → Skeleton UI → 计划结果展示；主导 MobX Store 结构定义与演进 |
 | 成员 C | **Exercise Explorer** | Explore 页完整流程：ExerciseDB 搜索/筛选 → 动作列表渲染 → 添加到自定义计划 |
-| 成员 D | **Plan Management + Persistence** | Details 页（计划编辑/保存/完成打卡）+ Firestore 持久化封装（Auth/Firestore 读写、`onSnapshot` 同步、Security Rules） |
+| 成员 D | **Plan Preview + Plan Management + Persistence** | Plan Preview 页（AI 生成结果预览、一键存入计划库）+ Plan 页（计划编辑/保存/完成打卡）+ Firestore 持久化封装（Auth/Firestore 读写、`onSnapshot` 同步、Security Rules） |
 
 ### **8.2 关键依赖与协作约定**
 
@@ -352,3 +398,47 @@ Data persistence showcase. Lists saved plans and visualizes workout progress.
 - 每个模块的 PR 必须经过至少一名其他成员 review 后才能合并。
 - 联调阶段按用户主流程端到端走查：登录 → 生成计划 → 保存 → 打卡 → Profile 可视化。
 - 每人维护个人贡献日志（commits / PR / 文档 / 测试），用于最终 individual self-reflection。
+
+---
+
+## **9. 当前实现状态（截至 2026-03-27）**
+
+### **9.1 已完成功能 ✅**
+
+| 功能模块 | 涉及文件 | 备注 |
+|---------|---------|------|
+| Firebase Email/Password 认证 | `authRepo.js`, `LoginPresenter`, `RegisterPresenter` | 含登录/注册/登出，中文错误提示 |
+| MobX Store 完整体系 | `planStore.js`, `userStore.js`, `uiStore.js` | uiStore 为新增（全局 Toast 状态） |
+| Firestore 实时同步 | `planRepo.js` | `onSnapshot` + `reaction` 双向绑定，含防 write-back 循环机制 |
+| AI 计划生成（GLM-4.7-flash） | `glmApi.js`, `GeneratorPresenter` | JSON 格式验证，含重试 UX |
+| ExerciseDB 动作富化 | `exerciseDbApi.js`, `GeneratorPresenter` | 失败时降级显示 un-enriched 动作 + Toast 警告 |
+| 计划预览页 | `PlanPreviewPresenter`, `planPreview.jsx` | 查看动作详情，保存到 savedPlans |
+| 计划详情与管理 | `PlanPresenter`, `PlanView` | 编辑名称/组次、标记完成、删除（二次确认） |
+| 动作浏览器（Explorer） | `ExplorerPresenter`, `ExplorerView` | 搜索 + 肌群过滤 + Add/Added 切换 |
+| 动作详情 Stack 页 | `ActionDetailsPresenter`, `ActionDetailsView` | GIF 展示 + 分步说明 |
+| Profile 页（基础） | `ProfilePresenter`, `ProfileView` | 邮箱/计划列表/登出 |
+| 全局 Toast 反馈 | `GlobalToast.jsx`, `uiStore.js` | 成功/警告/错误三种类型，自动消失 |
+| 通用异步状态组件 | `AsyncStateView.jsx` | loading/error/empty 统一复用 |
+
+### **9.2 待完成功能 ⏳**
+
+| 功能模块 | 涉及文件 | 阻塞项 / 说明 |
+|---------|---------|-------------|
+| Profile 打卡日历 | `CalendarView.jsx` | 需安装 `react-native-calendars`，UI 占位已就绪 |
+| Profile 周训练量图表 | `ChartView.jsx` | 需安装 `react-native-chart-kit`，UI 占位已就绪 |
+| Explorer 自定义计划保存 | `ExplorerPresenter` | "View / Save" 按钮逻辑待实现，草稿计划持久化流程待完善 |
+| Details Stack 页 | `app/details.jsx` | 当前为桩文件，Profile → 计划详情的导航流程待接线 |
+| Profile "开始计划" 按钮 | `ProfilePresenter` | `onStartPlan` 回调已预留，路由跳转未实现 |
+
+### **9.3 架构合规性检查**
+
+| 检查项 | 状态 |
+|-------|------|
+| View 层无 Store/Firebase 直接引用 | ✅ 合规 |
+| Presenter 均使用 `@observer` | ✅ 合规 |
+| 所有 Store 变更通过 `action` | ✅ 合规 |
+| Persistence 仅由 Model `reaction` 触发 | ✅ 合规 |
+| `resolvePromise` 防竞态条件 | ✅ 合规 |
+| `uiStore` 新增（原规划未列出） | ✅ 已同步至 §3 和 §4.2 |
+| `react-native-calendars` 已安装 | ❌ 待安装 |
+| `react-native-chart-kit` 已安装 | ❌ 待安装 |
