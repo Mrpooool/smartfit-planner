@@ -1,14 +1,44 @@
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
+import { router } from "expo-router";
+import { useState } from "react";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
-export function LoginView({ onLogin, onRegister }) {
-  // TODO: local useState for email, password, isRegistering, error message
+export function LoginView(props) {
+  const [email,setemail]=useState("")
+  const [password,setpassword]=useState("")
+  function emailACB(text){
+    setemail(text)
+  }
+  function passwordACB(text){
+    setpassword(text)
+  }
+  function loginACB(){
+    props.onLogin(email,password)
+  }
+  function registerACB(){
+    router.push('/register')
+  }
   return (
     <View style={styles.container}>
       <Text style={styles.title}>SmartFit Planner</Text>
-      {/* TODO: email TextInput */}
-      {/* TODO: password TextInput (secureTextEntry) */}
-      {/* TODO: LOGIN button → onLogin(email, password) */}
-      {/* TODO: toggle Register / Login link */}
+        <TextInput
+                style={{ height: 40, borderColor: 'gray', borderWidth: 1, padding: 10, margin: 10, backgroundColor: 'white' }}
+                placeholder="enter email"
+                value={email}
+                onChangeText={emailACB}
+        />
+        <TextInput
+                style={{ height: 40, borderColor: 'gray', borderWidth: 1, padding: 10, margin: 10, backgroundColor: 'white' }}
+                placeholder="enter password"
+                value={password}
+                onChangeText={passwordACB}
+                secureTextEntry={true}
+        />
+        <Pressable onPress={loginACB}>
+          <Text>Login</Text>
+        </Pressable>
+        <Pressable onPress={registerACB}>
+          <Text>New user? Create an account</Text>
+        </Pressable>
     </View>
   );
 }

@@ -65,7 +65,6 @@ export default observer(function ExplorerPresenter() {
     };
     const request = getExercisesByMuscle(resolveApiMuscle(muscle)).then(
       function normalizeResultsCB(results) {
-        console.log("raw exercise result", results[0]);
         return normalizeExerciseList(results);
       }
     );

@@ -4,6 +4,7 @@
 //   - planStore.ready gates the root layout (nothing meaningful renders until loaded)
 //   - onSnapshot provides live updates across devices (A+ criterion)
 
+import { action } from "mobx";
 import { doc, setDoc, getDoc, onSnapshot } from "firebase/firestore";
 import { db } from "./firebaseConfig";
 import { planStore } from "../model/planStore";
@@ -16,6 +17,21 @@ export function connectToPersistence(uid, watchFunction) {
   const docRef = doc(db, "users", uid, "data", "plans");
   let applyRemote = false; // prevents write-back loop when applying remote data
 
+  const applyDataFromSnapshotACB = action(function applyDataFromSnapshotACB(docSnap) {
+    applyRemote = true;
+    const exists = typeof docSnap.exists === "function" ? docSnap.exists() : !!docSnap.exists;
+    const data = exists ? (docSnap.data() || {}) : {};
+    planStore.savedPlans = Array.isArray(data.savedPlans) ? data.savedPlans : [];
+    planStore.ready = true;
+    applyRemote = false;
+  });
+
+  const logErrorACB = action(function logErrorACB(err) {
+    console.error("Firestore read failed:", err);
+    planStore.savedPlans = [];
+    planStore.ready = true;
+  });
+
   getDoc(docRef).then(applyDataFromSnapshotACB).catch(logErrorACB);
 
   const stopReaction = watchFunction(model2PersistACB, save2FirestoreACB);
@@ -27,30 +43,19 @@ export function connectToPersistence(uid, watchFunction) {
   };
 
   function model2PersistACB() {
-    return [planStore.savedPlans];
+    // Stringify forces MobX to observe deeply, so array lengths and nested field changes trigger the reaction
+    return JSON.stringify(planStore.savedPlans);
   }
 
   async function save2FirestoreACB() {
     if (!planStore.ready || applyRemote) return;
     try {
-      await setDoc(docRef, { savedPlans: planStore.savedPlans }, { merge: true });
+      // Firestore will throw if any nested value is undefined.
+      // Stringify -> Parse automatically removes all undefined values from the object tree.
+      const safePlans = JSON.parse(JSON.stringify(planStore.savedPlans));
+      await setDoc(docRef, { savedPlans: safePlans });
     } catch (err) {
       console.error("Firestore save failed:", err);
     }
-  }
-
-  function applyDataFromSnapshotACB(docSnap) {
-    applyRemote = true;
-    const exists = typeof docSnap.exists === "function" ? docSnap.exists() : !!docSnap.exists;
-    const data = exists ? (docSnap.data() || {}) : {};
-    planStore.savedPlans = Array.isArray(data.savedPlans) ? data.savedPlans : [];
-    planStore.ready = true;
-    applyRemote = false;
-  }
-
-  function logErrorACB(err) {
-    console.error("Firestore read failed:", err);
-    planStore.savedPlans = [];
-    planStore.ready = true;
   }
 }

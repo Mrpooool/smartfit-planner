@@ -3,13 +3,17 @@
 // The stale-promise check (promiseState.promise !== prms) prevents
 // race conditions when a new request fires before the previous one resolves.
 
+import { action } from "mobx";
+
 export function resolvePromise(prms, promiseState) {
-  promiseState.promise = prms;
-  promiseState.data = null;
-  promiseState.error = null;
+  action(function setPromiseCB() {
+    promiseState.promise = prms;
+    promiseState.data = null;
+    promiseState.error = null;
+  })();
   if (prms === null || prms === undefined) return;
 
-  prms.then(gotDataACB).catch(gotErrorACB);
+  prms.then(action(gotDataACB)).catch(action(gotErrorACB));
 
   function gotDataACB(data) {
     if (promiseState.promise !== prms) return;

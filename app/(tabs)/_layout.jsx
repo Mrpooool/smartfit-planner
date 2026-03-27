@@ -23,6 +23,15 @@ export default function TabsLayout() {
                 }}
             />
             <Tabs.Screen
+                name = "plan" 
+                options = {{
+                    title: "Plan",
+                    tabBarIcon: function renderPlanIconACB(){
+                        return <Text>📋</Text>
+                    }
+                }}
+            />
+            <Tabs.Screen
                 name = "profile"
                 options = {{
                     title: "Profile",

@@ -32,9 +32,7 @@ export function ExerciseCardView({ exercise, isAdded, onAdd }) {
       <View style={styles.info}>
         <Text style={styles.name}>{exercise?.name}</Text>
         <Text style={styles.muscle}>{exercise?.targetMuscle}</Text>
-        <Text style={styles.debugText}>
-          {exercise?.gifUrl ? exercise.gifUrl : "no image url"}
-        </Text>
+
       </View>
       <TouchableOpacity style={styles.addButton} onPress={handleAddPress}>
         <Text style={styles.addButtonText}>{isAdded ? "Added" : "Add"}</Text>

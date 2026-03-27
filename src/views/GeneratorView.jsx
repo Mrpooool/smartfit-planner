@@ -2,19 +2,18 @@ import { Picker } from "@react-native-picker/picker";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 export function GeneratorView(props) {
-  
+
   // TODO: time selector (15 / 30 / 60 min radio buttons)
   // TODO: equipment multi-select checkboxes
   // TODO: target muscle group picker
   // TODO: GENERATE button (disabled while promise is pending)
   // TODO: AsyncStateView for planPromiseState (Skeleton UI while loading)
-  const isLoading = Boolean(props.planPromiseState.promise) &&
-    !props.planPromiseState.data && !props.planPromiseState.error;
+  const isLoading = Boolean(props.promise) && !props.data && !props.error;
 
 
   return (
     <View style={styles.container}>
-      <Text style={styles.sectionTitle}>👤 Hi, Alex!</Text>
+      <Text style={styles.sectionTitle}>👤 Hi, {props.email}!</Text>
       <Text style={styles.pageTitle}>⚡ Smart Plan Generator</Text>
       {/* TODO: form inputs */}
 
@@ -36,7 +35,7 @@ export function GeneratorView(props) {
         <Text style={styles.sectionTitle}>Target Muscle Group</Text>
         <View style={styles.pickerWrapper}>
           <Picker
-            selectedValue={props.formParams.targetMuscle}
+            selectedValue={props.targetMuscle}
             onValueChange={chooseTargetMuscleACB}
           >
             <Picker.Item label="Full Body" value="full body" />
@@ -51,13 +50,13 @@ export function GeneratorView(props) {
       </View>
 
       {
-        props.warningMessage ? 
-        <Text style={styles.warningText}>{props.warningMessage}</Text> : null
+        props.warningMessage ?
+          <Text style={styles.warningText}>{props.warningMessage}</Text> : null
       }
 
-      <Pressable 
-        role="button" 
-        style={isLoading ? styles.disabledButton : styles.button} 
+      <Pressable
+        role="button"
+        style={isLoading ? styles.disabledButton : styles.button}
         onPress={props.onGenerate}
         disabled={isLoading}
       >
@@ -74,14 +73,14 @@ export function GeneratorView(props) {
         key={duration}
         role="button"
         onPress={chooseTimeACB}
-        style={props.formParams.duration === duration ? styles.selectedButton : styles.button}
+        style={props.duration === duration ? styles.selectedButton : styles.button}
       >
         <Text style={styles.buttonText}>{duration} mins</Text>
       </Pressable>
     );
 
     function chooseTimeACB() {
-    props.onParamChange("duration", duration);
+      props.onParamChange("duration", duration);
     }
   }
 
@@ -91,7 +90,7 @@ export function GeneratorView(props) {
         key={equipment}
         role="button"
         onPress={chooseEquipACB}
-        style={props.formParams.equipment.includes(equipment) ? styles.selectedButton : styles.button}
+        style={props.equipment.includes(equipment) ? styles.selectedButton : styles.button}
       >
         <Text style={styles.buttonText}>{equipment}</Text>
       </Pressable>
@@ -103,7 +102,7 @@ export function GeneratorView(props) {
   }
 
   function chooseTargetMuscleACB(muscle) {
-    props.onParamChange("targetMuscle", muscle); 
+    props.onParamChange("targetMuscle", muscle);
   }
 }
 
@@ -116,7 +115,8 @@ const styles = StyleSheet.create({
   section: { marginBottom: 24 },
   row: { flexDirection: "row", gap: 12 },
 
-  button: { backgroundColor: "#6366f1",
+  button: {
+    backgroundColor: "#6366f1",
     padding: 16,
     borderRadius: 12,
     alignItems: "center"
@@ -129,10 +129,10 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: "#c7d2fe",
   },
-  buttonText: { 
+  buttonText: {
     color: "#fff",
     fontWeight: "bold",
-    fontSize: 16 
+    fontSize: 16
   },
   disabledButton: {
     backgroundColor: "#9ca3af",
@@ -149,12 +149,12 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   warningText: {
-  color: "#b45309",
-  backgroundColor: "#fef3c7",
-  padding: 12,
-  borderRadius: 10,
-  marginBottom: 16,
-  fontSize: 14,
+    color: "#b45309",
+    backgroundColor: "#fef3c7",
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 16,
+    fontSize: 14,
   },
 });
 
