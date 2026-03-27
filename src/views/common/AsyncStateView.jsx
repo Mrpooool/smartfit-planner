@@ -1,17 +1,6 @@
-// Based on lab's suspenseView.jsx.
-// Unified async state renderer — handles loading / error / empty states.
-// Usage: <AsyncStateView promise={state.promise} error={state.error} />
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
-import { View, Text, ActivityIndicator, StyleSheet } from "react-native";
-
-export function AsyncStateView({ promise, error, empty }) {
-  if (promise === null || promise === undefined || empty) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.text}>No data</Text>
-      </View>
-    );
-  }
+export function AsyncStateView({ promise, error, empty, data }) {
   if (error) {
     return (
       <View style={styles.container}>
@@ -19,11 +8,25 @@ export function AsyncStateView({ promise, error, empty }) {
       </View>
     );
   }
-  return (
-    <View style={styles.container}>
-      <ActivityIndicator size="large" color="#6366f1" />
-    </View>
-  );
+
+  if (promise && (data === null || data === undefined)) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" />
+        <Text style={styles.text}>Loading...</Text>
+      </View>
+    );
+  }
+
+  if (promise === null || promise === undefined || empty) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.text}>No data</Text>
+      </View>
+    );
+  }
+
+  return null;
 }
 
 const styles = StyleSheet.create({
@@ -35,11 +38,12 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 16,
-    color: "#6b7280",
+    color: "#666",
+    marginTop: 8,
   },
   errorText: {
     fontSize: 14,
-    color: "#ef4444",
+    color: "red",
     textAlign: "center",
   },
 });
