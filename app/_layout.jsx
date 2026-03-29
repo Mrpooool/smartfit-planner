@@ -44,6 +44,7 @@ export default function RootLayout() {
         <Stack.Screen name="plan" options={{ title: "Plan" }} />
         <Stack.Screen name="action/[id]" options={{ title: "Action Details", headerBackTitle: "Back" }} />
         <Stack.Screen name="planPreview" options={{ title: "Preview Plan", headerBackTitle: "Back" }} />
+        <Stack.Screen name="savedplans" options={{ title: "Saved Plans" }} />
       </Stack>
       <GlobalToast />
     </>

@@ -1,6 +1,6 @@
+import { useRouter } from "expo-router";
 import { observer } from "mobx-react-lite";
 import { Alert, Platform } from "react-native";
-import { useRouter } from "expo-router";
 import { planStore } from "../model/planStore";
 import { uiStore } from "../model/uiStore";
 import { PlanView } from "../views/PlanView";
@@ -23,6 +23,14 @@ export default observer(function PlanPresenter() {
     uiStore.showToast("⭐ Plan saved to your library!", "success");
   }
 
+  function getLocalDateString() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
   // ── Mark today as completed ──
   function onMarkCompletedACB() {
     if (!plan) return;
@@ -34,7 +42,7 @@ export default observer(function PlanPresenter() {
       return;
     }
 
-    const today = new Date().toISOString().split("T")[0]; // "2026-03-23"
+    const today = getLocalDateString();
 
     // Check if already completed today
     const alreadyDone = (plan.completedDates || []).includes(today);

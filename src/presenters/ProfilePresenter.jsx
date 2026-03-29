@@ -1,3 +1,4 @@
+import { router } from "expo-router";
 import { observer } from "mobx-react-lite";
 import { planStore } from "../model/planStore";
 import { userStore } from "../model/userStore";
@@ -5,13 +6,21 @@ import { logoutUser } from "../persistence/authRepo";
 import { ProfileView } from "../views/ProfileView";
 
 export default observer(function ProfilePresenter() {
-  function onStartPlanACB(plan) {
-    planStore.setCurrentPlan(plan);
-    // TODO: router.push("/details")
+
+  const allCompletedDates = getAllCompletedDates(planStore.savedPlans);
+
+
+  function getAllCompletedDates(plans) {
+    const allDates = plans.flatMap(getCompletedDatesFromPlanCB);
+    return [...new Set(allDates)].sort();
   }
 
-  function onDeletePlanACB(planId) {
-    planStore.removeSavedPlan(planId);
+  function getCompletedDatesFromPlanCB(plan) {
+    return plan.completedDates || [];
+  }
+
+  function onOpenSavedPlansACB() {
+    router.push("/savedplans");
   }
 
   function onLogoutACB() {
@@ -23,9 +32,9 @@ export default observer(function ProfilePresenter() {
     <ProfileView
       savedPlans={planStore.savedPlans}
       email={userStore.email}
-      onStartPlan={onStartPlanACB}
-      onDeletePlan={onDeletePlanACB}
+      onOpenPlans={onOpenSavedPlansACB}
       onLogout={onLogoutACB}
+      completedDates={allCompletedDates}
     />
   );
 });
