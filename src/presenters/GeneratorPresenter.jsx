@@ -5,6 +5,7 @@ import { searchExercisesByName } from "../api/exerciseDbApi";
 import { generateWorkoutPlan } from "../api/glmApi";
 import { planStore } from "../model/planStore";
 import { userStore } from "../model/userStore";
+import { normalizeExerciseFromDb } from "../utils/normalizeExercise";
 import { resolvePromise } from "../utils/resolvePromise";
 import { GeneratorView } from "../views/GeneratorView";
 
@@ -31,6 +32,25 @@ export default observer(function GeneratorPresenter() {
   //GeneratorPresenter里直接用useRouter就行了，不需要从props里传
   const router = useRouter();
 
+  function createFallbackExercise(exercise) {
+    return {
+      id: `${exercise.name}-${Date.now()}-${Math.floor(Math.random() * 1000000)}`,
+      exerciseDbId: "",
+      name: exercise.name,
+      targetMuscle: formParams.targetMuscle,
+      bodyPart: "",
+      equipment: formParams.equipment.length > 0 ? formParams.equipment[0] : "Bodyweight",
+      gifUrl: "",
+      instructions: [],
+      secondaryMuscles: [],
+      description: "",
+      difficulty: "",
+      category: "",
+      sets: exercise.sets,
+      reps: exercise.reps,
+    };
+  }
+
   const onGenerateACB = action(function onGenerateACB() {
     // generateAndEnrichPlan: calls glmApi -> enriches each exercise via exerciseDbApi
     //   -> planStore.setCurrentPlan(result)
@@ -56,47 +76,23 @@ export default observer(function GeneratorPresenter() {
   }
 
   async function enrichedExerciseACB(exercise) {
-    //用GLM返回的exercise name去exerciseDbApi搜索，拿到第一个结果的gifUrl和id（如果有的话）返回
+    //用GLM返回的exercise name去exerciseDbApi搜索，并映射成当前plan使用的exercise结构
     try {
       const matches = await searchExercisesByName(exercise.name);
       const match = matches[0];
       if (!match) {
         action(function setWarningACB() { uiState.warningMessage = `⚠️ Warning: Exercise "${exercise.name}" not found in database, showing un-enriched exercise.`; })();
-        return {
-          id: `${exercise.name}-${Date.now()}-${Math.floor(Math.random() * 1000000)}`,
-          name: exercise.name,
-          targetMuscle: formParams.targetMuscle,
-          equipment: formParams.equipment.length > 0 ? formParams.equipment[0] : "Bodyweight",
-          gifUrl: "",
-          instructions: "",
-          sets: exercise.sets,
-          reps: exercise.reps,
-        };
+        return createFallbackExercise(exercise);
       }
 
-      return {
-        id: match.id,
-        name: exercise.name,
-        targetMuscle: formParams.targetMuscle,
-        equipment: match.equipment || "Unknown",
-        gifUrl: match.gifUrl,
-        instructions: Array.isArray(match.instructions) ? match.instructions.join("\n") : "",
-        //把数组里的每一个元素用 \n（换行符） 拼接成一整个长字符串。
+      return normalizeExerciseFromDb(match, {
         sets: exercise.sets,
         reps: exercise.reps,
-      };
-    } catch {//如果搜索动作的API调用失败了，也返回不带gifUrl和instructions的exercise，并且弹出警告
+      });
+    } catch {
+      //如果搜索动作的API调用失败了，也返回不带gifUrl和instructions的exercise，并且弹出警告
       action(function setWarningACB() { uiState.warningMessage = `⚠️ Warning: Failed to load demo for "${exercise.name}", showing un-enriched exercise.`; })();
-      return {
-        id: `${exercise.name}-${Date.now()}-${Math.floor(Math.random() * 1000000)}`,
-        name: exercise.name,
-        targetMuscle: formParams.targetMuscle,
-        equipment: formParams.equipment.length > 0 ? formParams.equipment[0] : "Bodyweight",
-        gifUrl: "",
-        instructions: "",
-        sets: exercise.sets,
-        reps: exercise.reps,
-      };
+      return createFallbackExercise(exercise);
     }
   }
 
@@ -127,5 +123,3 @@ export default observer(function GeneratorPresenter() {
     />
   );
 });
-
-

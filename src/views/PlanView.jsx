@@ -1,5 +1,6 @@
-import { View, Text, TextInput, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
 import { Image } from "expo-image";
+import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { getExerciseImageSource } from "../api/exerciseDbApi";
 
 /**
  * Pure View component — only receives props, never accesses store.
@@ -37,9 +38,9 @@ export function PlanView({
       <View key={exercise.id || index} style={styles.exerciseCard}>
         <TouchableOpacity activeOpacity={0.7} onPress={function onExercisePressCB() { onPressExercise(index); }}>
           {/* Exercise GIF */}
-          {exercise.gifUrl ? (
+          {exercise.exerciseDbId ? (
             <Image
-              source={{ uri: exercise.gifUrl }}
+              source={getExerciseImageSource(exercise.exerciseDbId,360)}
               style={styles.gif}
               contentFit="contain"
             />
