@@ -1,14 +1,14 @@
-import { View, Text, ScrollView, StyleSheet } from "react-native";
 import { Image } from "expo-image";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 export function ActionDetailsView({ exercise }) {
   if (!exercise) return null;
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {exercise.gifUrl ? (
+      {exercise.exerciseDbId ? (
         <Image
-          source={{ uri: exercise.gifUrl }}
+          source={getExerciseImageSource(exercise.exerciseDbId,360)}
           style={styles.gif}
           contentFit="contain"
           cachePolicy="memory-disk"
@@ -36,7 +36,7 @@ export function ActionDetailsView({ exercise }) {
         <Text style={styles.infoValue}>{exercise.equipment || "Unknown"}</Text>
       </View>
 
-      {exercise.instructions && (
+      {exercise.instructions?.length > 0 && (
         <View style={styles.instructionsContainer}>
           <Text style={styles.sectionTitle}>Instructions</Text>
           {Array.isArray(exercise.instructions) ? (
