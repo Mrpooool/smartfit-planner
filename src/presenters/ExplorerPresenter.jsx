@@ -1,6 +1,7 @@
 import { observer } from "mobx-react-lite";
 import { useEffect, useState } from "react";
 import { FlatList } from "react-native";
+import { useRouter } from "expo-router";
 import { getExercisesByMuscle } from "../api/exerciseDbApi";
 import { resolvePromise } from "../utils/resolvePromise";
 import { ExerciseCardView } from "../views/ExerciseCardView";
@@ -11,6 +12,7 @@ const FILTERS = ["all", "chest", "upper legs", "back"];
 const DEFAULT_FILTER = "chest";
 
 export default observer(function ExplorerPresenter() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState(DEFAULT_FILTER);
   const [draftExercises, setDraftExercises] = useState([]);
@@ -55,6 +57,13 @@ export default observer(function ExplorerPresenter() {
 
   function onViewPlanACB() {
     // TODO: connect to details/save flow later in the project.
+  }
+
+  function onExercisePressACB(exercise) {
+    router.push({
+      pathname: "/details",
+      params: { id: String(exercise.id) },
+    });
   }
 
   function fetchExercisesByFilter(muscle) {
@@ -111,11 +120,16 @@ export default observer(function ExplorerPresenter() {
     const addedExerciseIds = getAddedExerciseIds();
     const isAdded = addedExerciseIds.indexOf(exercise.id) >= 0;
 
+    function handleExercisePress() {
+      onExercisePressACB(exercise);
+    }
+
     return (
       <ExerciseCardView
         exercise={exercise}
         isAdded={isAdded}
         onAdd={onAddExerciseACB}
+        onPress={handleExercisePress}
       />
     );
   }
@@ -179,9 +193,6 @@ function normalizeExerciseList(exercises) {
 }
 
 function normalizeExerciseCB(exercise) {
-  const instructions = Array.isArray(exercise.instructions)
-    ? exercise.instructions.join(" ")
-    : exercise.instructions || "";
   const imageUrl =
     exercise.gifUrl ||
     exercise.imageUrl ||
@@ -193,7 +204,7 @@ function normalizeExerciseCB(exercise) {
     name: exercise.name,
     targetMuscle: exercise.target || exercise.targetMuscle || "Unknown",
     gifUrl: imageUrl,
-    instructions: instructions,
+    instructions: Array.isArray(exercise.instructions) ? exercise.instructions : (exercise.instructions || ""),
     sets: 3,
     reps: 10,
   };
