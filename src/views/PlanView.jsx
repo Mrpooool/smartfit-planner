@@ -1,6 +1,7 @@
 import { Image } from "expo-image";
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { getExerciseImageSource } from "../api/exerciseDbApi";
+import { colors, radius, shadow } from "../theme";
 
 /**
  * Pure View component — only receives props, never accesses store.
@@ -139,72 +140,71 @@ export function PlanView({
 // ── Styles ──────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   // Container
-  container: { flex: 1, backgroundColor: "#f9fafb" },
+  container: { flex: 1, backgroundColor: colors.background },
   content: { padding: 20, paddingBottom: 40 },
 
   // Empty state
   emptyContainer: { flex: 1, justifyContent: "center", alignItems: "center", padding: 40 },
   emptyIcon: { fontSize: 48, marginBottom: 12 },
-  emptyText: { fontSize: 18, fontWeight: "600", color: "#374151" },
-  emptyHint: { fontSize: 14, color: "#9ca3af", marginTop: 6 },
+  emptyText: { fontSize: 18, fontWeight: "600", color: colors.textDark },
+  emptyHint: { fontSize: 14, color: colors.textTertiary, marginTop: 6 },
 
   // Plan name input
-  label: { fontSize: 13, fontWeight: "600", color: "#6b7280", marginBottom: 6 },
+  label: { fontSize: 13, fontWeight: "600", color: colors.textSecondary, marginBottom: 6 },
   planNameInput: {
-    fontSize: 20, fontWeight: "700", color: "#111827",
-    borderBottomWidth: 2, borderBottomColor: "#6366f1",
+    fontSize: 20, fontWeight: "700", color: colors.textPrimary,
+    borderBottomWidth: 2, borderBottomColor: colors.primary,
     paddingVertical: 8, marginBottom: 24,
   },
 
   // Exercise card
   exerciseCard: {
-    backgroundColor: "#ffffff", borderRadius: 14,
+    backgroundColor: colors.card, borderRadius: 14,
     padding: 16, marginBottom: 16,
-    shadowColor: "#000", shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05, shadowRadius: 4, elevation: 2,
+    ...shadow.md,
   },
   gif: { width: "100%", height: 200, borderRadius: 10, marginBottom: 12 },
   gifPlaceholder: {
     width: "100%", height: 120, borderRadius: 10,
-    backgroundColor: "#f3f4f6", justifyContent: "center", alignItems: "center",
+    backgroundColor: colors.surface, justifyContent: "center", alignItems: "center",
     marginBottom: 12,
   },
   gifPlaceholderText: { fontSize: 36 },
-  exerciseName: { fontSize: 17, fontWeight: "700", color: "#111827" },
-  targetMuscle: { fontSize: 13, color: "#6366f1", marginTop: 2, marginBottom: 10 },
+  exerciseName: { fontSize: 17, fontWeight: "700", color: colors.textPrimary },
+  targetMuscle: { fontSize: 13, color: colors.primary, marginTop: 2, marginBottom: 10 },
 
   // Sets & Reps
   setsRepsRow: { flexDirection: "row", gap: 16, marginBottom: 10 },
   fieldGroup: { flex: 1 },
-  fieldLabel: { fontSize: 12, fontWeight: "600", color: "#6b7280", marginBottom: 4 },
+  fieldLabel: { fontSize: 12, fontWeight: "600", color: colors.textSecondary, marginBottom: 4 },
   numberInput: {
-    backgroundColor: "#f3f4f6", borderRadius: 8,
+    backgroundColor: colors.surface, borderRadius: radius.sm,
     paddingHorizontal: 12, paddingVertical: 10,
-    fontSize: 16, fontWeight: "600", color: "#111827",
+    fontSize: 16, fontWeight: "600", color: colors.textPrimary,
     textAlign: "center",
   },
 
   // Instructions
-  instructions: { fontSize: 13, color: "#4b5563", lineHeight: 18, marginTop: 4 },
+  instructions: { fontSize: 13, color: colors.textMuted, lineHeight: 18, marginTop: 4 },
 
   // Buttons
   saveButton: {
-    backgroundColor: "#6366f1", padding: 16, borderRadius: 12,
+    backgroundColor: colors.primary, padding: 16, borderRadius: radius.md,
     alignItems: "center", marginTop: 20,
   },
   completeButton: {
-    backgroundColor: "#10b981", padding: 16, borderRadius: 12,
+    backgroundColor: colors.success, padding: 16, borderRadius: radius.md,
     alignItems: "center", marginTop: 12,
   },
   completeButtonDisabled: {
-    backgroundColor: "#d1d5db", padding: 16, borderRadius: 12,
+    backgroundColor: colors.disabled, padding: 16, borderRadius: radius.md,
     alignItems: "center", marginTop: 12,
   },
-  buttonTextDisabled: { color: "#6b7280", fontWeight: "bold", fontSize: 15 },
+  buttonTextDisabled: { color: colors.textSecondary, fontWeight: "bold", fontSize: 15 },
   deleteButton: {
-    backgroundColor: "transparent", padding: 16, borderRadius: 12,
-    alignItems: "center", marginTop: 12, borderWidth: 1, borderColor: "#ef4444",
+    backgroundColor: "transparent", padding: 16, borderRadius: radius.md,
+    alignItems: "center", marginTop: 12, borderWidth: 1, borderColor: colors.error,
   },
-  buttonText: { color: "#fff", fontWeight: "bold", fontSize: 15 },
-  deleteButtonText: { color: "#ef4444", fontWeight: "bold", fontSize: 15 },
+  buttonText: { color: colors.card, fontWeight: "bold", fontSize: 15 },
+  deleteButtonText: { color: colors.error, fontWeight: "bold", fontSize: 15 },
 });

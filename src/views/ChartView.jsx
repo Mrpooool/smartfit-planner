@@ -2,6 +2,7 @@
 // import { BarChart } from "react-native-chart-kit";
 
 import { View, Text, StyleSheet } from "react-native";
+import { colors, radius } from "../theme";
 
 export function ChartView({ weeklyData }) {
   // weeklyData: number[] — workout count per week, e.g. [3, 5, 2, 4]
@@ -20,6 +21,6 @@ export function ChartView({ weeklyData }) {
 }
 
 const styles = StyleSheet.create({
-  placeholder: { height: 120, backgroundColor: "#f3f4f6", borderRadius: 10, alignItems: "center", justifyContent: "center", marginVertical: 12 },
-  text: { color: "#9ca3af" },
+  placeholder: { height: 120, backgroundColor: colors.surface, borderRadius: radius.sm, alignItems: "center", justifyContent: "center", marginVertical: 12 },
+  text: { color: colors.textTertiary },
 });

@@ -1,10 +1,12 @@
+import { Ionicons } from "@expo/vector-icons";
 import {
-  View,
+  StyleSheet,
   Text,
   TextInput,
-  StyleSheet,
   TouchableOpacity,
+  View,
 } from "react-native";
+import { colors, radius, shadow } from "../theme";
 
 export function ExplorerView({
   searchQuery,
@@ -30,8 +32,11 @@ export function ExplorerView({
         key={filterName}
         style={[styles.filterChip, selected && styles.filterChipActive]}
         onPress={handleFilterPress}
+        activeOpacity={0.7}
       >
-        <Text style={styles.filterChipText}>{formatFilterLabel(filterName)}</Text>
+        <Text style={[styles.filterChipText, selected && styles.filterChipTextActive]}>
+          {formatFilterLabel(filterName)}
+        </Text>
       </TouchableOpacity>
     );
   }
@@ -40,21 +45,26 @@ export function ExplorerView({
     <View style={styles.container}>
       <Text style={styles.title}>Explore Exercises</Text>
 
-      <TextInput
-        value={searchQuery}
-        onChangeText={onSearch}
-        placeholder="Search exercise"
-        style={styles.searchInput}
-      />
+      <View style={styles.searchWrapper}>
+        <Ionicons name="search-outline" size={18} color={colors.textTertiary} style={styles.searchIcon} />
+        <TextInput
+          value={searchQuery}
+          onChangeText={onSearch}
+          placeholder="Search exercise"
+          placeholderTextColor={colors.textTertiary}
+          style={styles.searchInput}
+        />
+      </View>
 
-      <Text style={styles.sectionTitle}>Filters</Text>
       <View style={styles.filterRow}>{filters.map(renderFilterChip)}</View>
 
       <View style={styles.resultsContainer}>{resultsContent}</View>
 
       <View style={styles.bottomBar}>
-        <Text style={styles.bottomTitle}>Custom Plan: {customPlanCount}</Text>
-        <TouchableOpacity style={styles.viewButton} onPress={onViewPlan}>
+        <Text style={styles.bottomTitle}>
+          <Text style={styles.bottomCount}>{customPlanCount}</Text> exercises selected
+        </Text>
+        <TouchableOpacity style={styles.viewButton} onPress={onViewPlan} activeOpacity={0.8}>
           <Text style={styles.viewButtonText}>View / Save</Text>
         </TouchableOpacity>
       </View>
@@ -79,62 +89,91 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: "#fff",
+    backgroundColor: colors.background,
   },
   title: {
     fontSize: 22,
     fontWeight: "bold",
+    color: colors.textPrimary,
     marginBottom: 16,
+  },
+  searchWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.card,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: 12,
+    marginBottom: 12,
+    ...shadow.sm,
+  },
+  searchIcon: {
+    marginRight: 8,
   },
   searchInput: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    padding: 10,
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 8,
+    flex: 1,
+    paddingVertical: 10,
+    fontSize: 15,
+    color: colors.textPrimary,
   },
   filterRow: {
     flexDirection: "row",
     flexWrap: "wrap",
     marginBottom: 12,
+    gap: 8,
   },
   filterChip: {
     borderWidth: 1,
-    borderColor: "#ccc",
-    paddingHorizontal: 10,
+    borderColor: colors.borderLight,
+    paddingHorizontal: 14,
     paddingVertical: 6,
-    marginRight: 8,
-    marginBottom: 8,
+    borderRadius: radius.pill,
+    backgroundColor: colors.card,
   },
   filterChipActive: {
-    backgroundColor: "#eee",
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   filterChipText: {
     fontSize: 14,
+    color: colors.textDark,
+    fontWeight: "500",
+    textTransform: "capitalize",
+  },
+  filterChipTextActive: {
+    color: colors.card,
+    fontWeight: "600",
   },
   resultsContainer: {
     flex: 1,
   },
   bottomBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     borderTopWidth: 1,
-    borderTopColor: "#ddd",
+    borderTopColor: colors.border,
     paddingTop: 12,
     marginTop: 8,
   },
   bottomTitle: {
-    marginBottom: 8,
+    fontSize: 14,
+    color: colors.textSecondary,
+  },
+  bottomCount: {
+    fontWeight: "700",
+    color: colors.primary,
   },
   viewButton: {
-    borderWidth: 1,
-    borderColor: "#999",
-    padding: 10,
-    alignItems: "center",
+    backgroundColor: colors.primary,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: radius.sm,
   },
   viewButtonText: {
     fontSize: 14,
+    fontWeight: "700",
+    color: colors.card,
   },
 });

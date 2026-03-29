@@ -16,7 +16,7 @@ export default observer(function RegisterPresenter() {
 
     try {
       await registerUser(email, password);
-      uiStore.showToast("✨ 注册成功！", "success");
+      uiStore.showToast("Account created!", "success");
       router.replace("/(tabs)");
     } catch (err) {
       console.log("Registration error:", err);
@@ -30,13 +30,13 @@ export default observer(function RegisterPresenter() {
 
   function getErrorMessage(code) {
     const errorMap = {
-      "auth/email-already-in-use": "此邮箱已被注册",
-      "auth/invalid-email": "邮箱格式不正确",
-      "auth/weak-password": "密码过于简单（至少6个字符）",
-      "auth/operation-not-allowed": "注册功能未启用",
-      "auth/network-request-failed": "网络连接失败，请检查网络",
+      "auth/email-already-in-use": "This email is already registered",
+      "auth/invalid-email": "Invalid email address",
+      "auth/weak-password": "Password is too weak (min. 6 characters)",
+      "auth/operation-not-allowed": "Registration is not enabled",
+      "auth/network-request-failed": "Network error, please check your connection",
     };
-    return errorMap[code] || `注册失败: ${code || "未知错误"}`;
+    return errorMap[code] || `Registration failed: ${code || "unknown error"}`;
   }
 
   return (

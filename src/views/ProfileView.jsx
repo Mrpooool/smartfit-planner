@@ -1,11 +1,35 @@
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { CalendarView } from "./CalendarView";
+import { colors, radius, shadow } from "../theme";
 
-export function ProfileView({ email, completedDates, onOpenPlans, onLogout }) {
+export function ProfileView({ email, completedDates, totalWorkouts, thisWeekCount, savedPlansCount, onOpenPlans, onLogout }) {
+  const avatarLetter = email ? email[0].toUpperCase() : "?";
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Profile & Progress</Text>
-      <Text style={styles.email}>{email}</Text>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      {/* Avatar + user info */}
+      <View style={styles.header}>
+        <View style={styles.avatar}>
+          <Text style={styles.avatarText}>{avatarLetter}</Text>
+        </View>
+        <Text style={styles.email}>{email}</Text>
+      </View>
+
+      {/* Stats row */}
+      <View style={styles.statsRow}>
+        <View style={styles.statCard}>
+          <Text style={styles.statNumber}>{totalWorkouts}</Text>
+          <Text style={styles.statLabel}>Total{"\n"}Workouts</Text>
+        </View>
+        <View style={styles.statCard}>
+          <Text style={styles.statNumber}>{thisWeekCount}</Text>
+          <Text style={styles.statLabel}>This{"\n"}Week</Text>
+        </View>
+        <View style={styles.statCard}>
+          <Text style={styles.statNumber}>{savedPlansCount}</Text>
+          <Text style={styles.statLabel}>Saved{"\n"}Plans</Text>
+        </View>
+      </View>
 
       <Text style={styles.sectionTitle}>My Saved Plans</Text>
       <TouchableOpacity style={styles.libraryButton} onPress={onOpenPlans}>
@@ -16,54 +40,94 @@ export function ProfileView({ email, completedDates, onOpenPlans, onLogout }) {
       <CalendarView completedDates={completedDates} />
 
       <TouchableOpacity style={styles.logoutButton} onPress={onLogout}>
-        <Text style={styles.logoutText}>🔥 LOGOUT</Text>
+        <Text style={styles.logoutText}>Logout</Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
+  container: { flex: 1 },
+  content: { padding: 20, paddingBottom: 40 },
+
+  // Header
+  header: {
+    alignItems: "center",
+    marginBottom: 24,
   },
-  title: {
-    fontSize: 22,
-    fontWeight: "bold",
-    marginBottom: 4,
+  avatar: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: colors.primary,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  avatarText: {
+    fontSize: 32,
+    fontWeight: "700",
+    color: colors.card,
   },
   email: {
     fontSize: 14,
-    color: "#6b7280",
-    marginBottom: 20,
+    color: colors.textSecondary,
   },
+
+  // Stats
+  statsRow: {
+    flexDirection: "row",
+    gap: 12,
+    marginBottom: 24,
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: colors.card,
+    borderRadius: radius.md,
+    paddingVertical: 16,
+    alignItems: "center",
+    ...shadow.sm,
+  },
+  statNumber: {
+    fontSize: 26,
+    fontWeight: "800",
+    color: colors.primary,
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    textAlign: "center",
+    lineHeight: 16,
+  },
+
   sectionTitle: {
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 12,
-    marginTop: 12,
+    marginTop: 4,
   },
   libraryButton: {
-    backgroundColor: "#6366f1",
+    backgroundColor: colors.primary,
     paddingVertical: 14,
     paddingHorizontal: 16,
-    borderRadius: 10,
+    borderRadius: radius.sm,
     marginBottom: 20,
     alignItems: "center",
   },
   libraryButtonText: {
-    color: "#fff",
+    color: colors.card,
     fontWeight: "bold",
   },
   logoutButton: {
-    marginTop: 24,
+    marginTop: 8,
     padding: 14,
-    backgroundColor: "#ef4444",
-    borderRadius: 10,
+    backgroundColor: colors.error,
+    borderRadius: radius.sm,
     alignItems: "center",
   },
   logoutText: {
-    color: "#ffffff",
+    color: colors.card,
     fontWeight: "bold",
   },
 });

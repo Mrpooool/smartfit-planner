@@ -1,6 +1,7 @@
 import { router } from "expo-router";
 import { useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { colors, radius } from "../theme";
 
 export function RegisterView(props) {
   const [email, setEmail] = useState("");
@@ -33,7 +34,7 @@ export function RegisterView(props) {
 
       <TextInput
         style={styles.input}
-        placeholder="邮箱"
+        placeholder="Email"
         value={email}
         onChangeText={emailACB}
         editable={!isLoading}
@@ -43,7 +44,7 @@ export function RegisterView(props) {
 
       <TextInput
         style={styles.input}
-        placeholder="密码（至少6个字符）"
+        placeholder="Password (min. 6 characters)"
         value={password}
         onChangeText={passwordACB}
         editable={!isLoading}
@@ -56,56 +57,56 @@ export function RegisterView(props) {
         {isLoading ? (
           <ActivityIndicator color="#ffffff" />
         ) : (
-          <Text style={styles.buttonText}>注册</Text>
+          <Text style={styles.buttonText}>Create Account</Text>
         )}
       </Pressable>
 
       <Pressable onPress={backACB} disabled={isLoading} style={styles.backButton}>
-        <Text style={styles.backButtonText}>返回登录</Text>
+        <Text style={styles.backButtonText}>Already have an account? Log in</Text>
       </Pressable>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    justifyContent: "center", 
+  container: {
+    flex: 1,
+    justifyContent: "center",
     padding: 24,
-    backgroundColor: "#f5f5f5"
+    backgroundColor: colors.background,
   },
-  title: { 
-    fontSize: 28, 
-    fontWeight: "bold", 
-    textAlign: "center", 
-    marginBottom: 32 
+  title: {
+    fontSize: 28,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 32,
   },
   input: {
     height: 50,
-    borderColor: "#ddd",
+    borderColor: colors.border,
     borderWidth: 1,
     padding: 12,
     marginVertical: 10,
-    backgroundColor: "white",
-    borderRadius: 8,
+    backgroundColor: colors.card,
+    borderRadius: radius.sm,
     fontSize: 16,
   },
   button: {
-    backgroundColor: "#4CAF50",
+    backgroundColor: colors.primary,
     padding: 15,
     marginVertical: 15,
-    borderRadius: 8,
+    borderRadius: radius.sm,
     justifyContent: "center",
     alignItems: "center",
     minHeight: 50,
   },
   buttonText: {
-    color: "white",
+    color: colors.card,
     fontSize: 16,
     fontWeight: "bold",
   },
   errorText: {
-    color: "#d32f2f",
+    color: colors.error,
     fontSize: 14,
     marginVertical: 10,
     paddingHorizontal: 10,
@@ -116,7 +117,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   backButtonText: {
-    color: "#1976d2",
+    color: colors.primary,
     fontSize: 14,
   },
 });
