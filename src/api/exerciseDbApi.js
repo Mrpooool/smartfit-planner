@@ -8,6 +8,16 @@ const headers = {
   "X-RapidAPI-Host": "exercisedb.p.rapidapi.com",
 };
 
+const responseCache = new Map();
+const inflightRequests = new Map();
+
+const CACHE_TTL_MS = {
+  searchExercisesByName: 10 * 60 * 1000,
+  getExercisesByMuscle: 30 * 60 * 1000,
+  getExerciseById: 24 * 60 * 60 * 1000,
+  getTargetMuscleList: 24 * 60 * 60 * 1000,
+};
+
 export function getExerciseImageSource(exerciseId, resolution) {
   return {
     uri: `${BASE_URL}/image?resolution=${resolution || 360}&exerciseId=${encodeURIComponent(exerciseId)}`,
@@ -21,12 +31,11 @@ export function getExerciseImageSource(exerciseId, resolution) {
  * @returns {Promise<Object[]>}
  */
 export async function searchExercisesByName(name) {
-  const response = await fetch(
+  return fetchJsonWithCache(
+    "searchExercisesByName",
     `${BASE_URL}/exercises/name/${encodeURIComponent(name.toLowerCase())}?offset=0&limit=5`,
-    { headers }
+    CACHE_TTL_MS.searchExercisesByName
   );
-  if (!response.ok) throw new Error(`ExerciseDB error: ${response.status}`);
-  return response.json();
 }
 
 /**
@@ -35,12 +44,11 @@ export async function searchExercisesByName(name) {
  * @returns {Promise<Object[]>}
  */
 export async function getExercisesByMuscle(muscle) {
-  const response = await fetch(
+  return fetchJsonWithCache(
+    "getExercisesByMuscle",
     `${BASE_URL}/exercises/bodyPart/${encodeURIComponent(muscle)}?offset=0&limit=20`,
-    { headers }
+    CACHE_TTL_MS.getExercisesByMuscle
   );
-  if (!response.ok) throw new Error(`ExerciseDB error: ${response.status}`);
-  return response.json();
 }
 
 /**
@@ -49,12 +57,11 @@ export async function getExercisesByMuscle(muscle) {
  * @returns {Promise<Object>}
  */
 export async function getExerciseById(exerciseId) {
-  const response = await fetch(
+  return fetchJsonWithCache(
+    "getExerciseById",
     `${BASE_URL}/exercises/exercise/${encodeURIComponent(exerciseId)}`,
-    { headers }
+    CACHE_TTL_MS.getExerciseById
   );
-  if (!response.ok) throw new Error(`ExerciseDB error: ${response.status}`);
-  return response.json();
 }
 
 /**
@@ -62,7 +69,52 @@ export async function getExerciseById(exerciseId) {
  * @returns {Promise<string[]>}
  */
 export async function getTargetMuscleList() {
-  const response = await fetch(`${BASE_URL}/exercises/targetList`, { headers });
-  if (!response.ok) throw new Error(`ExerciseDB error: ${response.status}`);
-  return response.json();
+  return fetchJsonWithCache(
+    "getTargetMuscleList",
+    `${BASE_URL}/exercises/targetList`,
+    CACHE_TTL_MS.getTargetMuscleList
+  );
+}
+
+export function clearExerciseDbCache() {
+  responseCache.clear();
+  inflightRequests.clear();
+}
+
+async function fetchJsonWithCache(scope, url, ttlMs) {
+  const cacheKey = `${scope}:${url}`;
+  const cachedEntry = responseCache.get(cacheKey);
+
+  if (isCacheEntryValid(cachedEntry)) {
+    return cachedEntry.data;
+  }
+
+  const inflightRequest = inflightRequests.get(cacheKey);
+  if (inflightRequest) {
+    return inflightRequest;
+  }
+
+  const request = fetch(url, { headers })
+    .then(async function parseResponseCB(response) {
+      if (!response.ok) {
+        throw new Error(`ExerciseDB error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      responseCache.set(cacheKey, {
+        data: data,
+        expiresAt: Date.now() + ttlMs,
+      });
+      return data;
+    })
+    .finally(function cleanupInflightCB() {
+      inflightRequests.delete(cacheKey);
+    });
+
+  inflightRequests.set(cacheKey, request);
+  return request;
+}
+
+function isCacheEntryValid(cacheEntry) {
+  return Boolean(cacheEntry && cacheEntry.expiresAt > Date.now());
 }
