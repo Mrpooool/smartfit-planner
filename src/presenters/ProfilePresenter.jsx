@@ -9,7 +9,6 @@ export default observer(function ProfilePresenter() {
 
   const allCompletedDates = getAllCompletedDates(planStore.savedPlans);
 
-
   function getAllCompletedDates(plans) {
     const allDates = plans.flatMap(getCompletedDatesFromPlanCB);
     return [...new Set(allDates)].sort();
@@ -17,6 +16,16 @@ export default observer(function ProfilePresenter() {
 
   function getCompletedDatesFromPlanCB(plan) {
     return plan.completedDates || [];
+  }
+
+  function getThisWeekCount() {//计算最近7天内完成的锻炼次数
+    const today = new Date();
+    const weekAgo = new Date(today);
+    weekAgo.setDate(today.getDate() - 6);
+    const weekAgoStr = weekAgo.toISOString().split("T")[0];
+    return allCompletedDates.filter(function isThisWeekCB(d) {
+      return d >= weekAgoStr;
+    }).length;
   }
 
   function onOpenSavedPlansACB() {
@@ -30,11 +39,13 @@ export default observer(function ProfilePresenter() {
 
   return (
     <ProfileView
-      savedPlans={planStore.savedPlans}
       email={userStore.email}
+      completedDates={allCompletedDates}
+      totalWorkouts={allCompletedDates.length}
+      thisWeekCount={getThisWeekCount()}
+      savedPlansCount={planStore.savedPlans.length}
       onOpenPlans={onOpenSavedPlansACB}
       onLogout={onLogoutACB}
-      completedDates={allCompletedDates}
     />
   );
 });

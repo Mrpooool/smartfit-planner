@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { colors, radius } from "../theme";
 
 export function SavedPlansView({ savedPlans, getThisWeekCount, onStartPlan, onDeletePlan }) {
   const [openPlanId, setOpenPlanId] = useState(null);
@@ -66,7 +67,7 @@ export function SavedPlansView({ savedPlans, getThisWeekCount, onStartPlan, onDe
 
       {savedPlans.length === 0 ? (
         <View style={styles.emptyBox}>
-          <Text style={styles.emptyText}>还没有保存的计划。</Text>
+          <Text style={styles.emptyText}>No saved plans yet.</Text>
         </View>
       ) : (
         <FlatList
@@ -93,15 +94,15 @@ const styles = StyleSheet.create({
   },
   emptyBox: {
     padding: 16,
-    borderRadius: 12,
-    backgroundColor: "#f3f4f6",
+    borderRadius: radius.md,
+    backgroundColor: colors.surface,
   },
   emptyText: {
-    color: "#6b7280",
+    color: colors.textSecondary,
   },
   card: {
-    backgroundColor: "#f3f4f6",
-    borderRadius: 12,
+    backgroundColor: colors.surface,
+    borderRadius: radius.md,
     marginBottom: 12,
     padding: 14,
   },
@@ -117,7 +118,7 @@ const styles = StyleSheet.create({
   },
   planMeta: {
     fontSize: 13,
-    color: "#6b7280",
+    color: colors.textSecondary,
   },
   expandText: {
     fontSize: 16,
@@ -126,31 +127,31 @@ const styles = StyleSheet.create({
     marginTop: 12,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: "#d1d5db",
+    borderTopColor: colors.borderLight,
   },
   weekText: {
     fontSize: 14,
     marginBottom: 12,
-    color: "#374151",
+    color: colors.textDark,
   },
   buttonRow: {
     flexDirection: "row",
     gap: 10,
   },
   startButton: {
-    backgroundColor: "#6366f1",
+    backgroundColor: colors.primary,
     paddingVertical: 10,
     paddingHorizontal: 14,
-    borderRadius: 8,
+    borderRadius: radius.sm,
   },
   deleteButton: {
-    backgroundColor: "#ef4444",
+    backgroundColor: colors.error,
     paddingVertical: 10,
     paddingHorizontal: 14,
-    borderRadius: 8,
+    borderRadius: radius.sm,
   },
   buttonText: {
-    color: "#ffffff",
+    color: colors.card,
     fontWeight: "bold",
   },
 });

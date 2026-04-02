@@ -1,5 +1,6 @@
 import { StyleSheet, View } from "react-native";
 import { Calendar } from "react-native-calendars";
+import { colors, radius } from "../theme";
 
 export function CalendarView(props) {
   const markedDates = makeMarkedDates(props.completedDates || []);
@@ -17,7 +18,7 @@ function makeMarkedDates(completedDates = []) {
   completedDates.forEach(function addMarkedDateCB(date) {
     result[date] = {
       selected: true,
-      selectedColor: "#22c55e",
+      selectedColor: colors.successCalendar,
     };
   });
 
@@ -28,7 +29,7 @@ const styles = StyleSheet.create({
   container: {
     marginTop: 12,
     marginBottom: 20,
-    borderRadius: 12,
+    borderRadius: radius.md,
     overflow: "hidden",
   },
 });
