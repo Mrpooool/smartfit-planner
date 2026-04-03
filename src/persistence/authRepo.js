@@ -1,11 +1,12 @@
 import {
-  signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
-  signOut,
   onAuthStateChanged,
+  sendPasswordResetEmail,
+  signInWithEmailAndPassword,
+  signOut,
 } from "firebase/auth";
-import { auth } from "./firebaseConfig";
 import { userStore } from "../model/userStore";
+import { auth } from "./firebaseConfig";
 
 // Call once on app startup (e.g. in root _layout useEffect).
 // Listens for auth state changes and updates userStore accordingly.
@@ -30,4 +31,8 @@ export function registerUser(email, password) {
 
 export function logoutUser() {
   return signOut(auth);
+}
+
+export function resetPassword(email) {
+  return sendPasswordResetEmail(auth, email);
 }

@@ -7,8 +7,6 @@ export function RegisterView(props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const { isLoading = false, error = null } = props;
-
   function emailACB(text) {
     setEmail(text);
   }
@@ -37,7 +35,7 @@ export function RegisterView(props) {
         placeholder="Email"
         value={email}
         onChangeText={emailACB}
-        editable={!isLoading}
+        editable={!props.isLoading}
         keyboardType="email-address"
         autoCapitalize="none"
       />
@@ -47,21 +45,21 @@ export function RegisterView(props) {
         placeholder="Password (min. 6 characters)"
         value={password}
         onChangeText={passwordACB}
-        editable={!isLoading}
+        editable={!props.isLoading}
         secureTextEntry={true}
       />
 
-      {error && <Text style={styles.errorText}>{error}</Text>}
+      {props.error && <Text style={styles.errorText}>{props.error}</Text>}
 
-      <Pressable onPress={registerACB} disabled={isLoading} style={styles.button}>
-        {isLoading ? (
+      <Pressable onPress={registerACB} disabled={props.isLoading} style={styles.button}>
+        {props.isLoading ? (
           <ActivityIndicator color="#ffffff" />
         ) : (
           <Text style={styles.buttonText}>Create Account</Text>
         )}
       </Pressable>
 
-      <Pressable onPress={backACB} disabled={isLoading} style={styles.backButton}>
+      <Pressable onPress={backACB} disabled={props.isLoading} style={styles.backButton}>
         <Text style={styles.backButtonText}>Already have an account? Log in</Text>
       </Pressable>
     </View>
