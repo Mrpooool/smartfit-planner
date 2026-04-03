@@ -2,22 +2,34 @@ import {
   View,
   Text,
   TextInput,
+<<<<<<< Updated upstream
   StyleSheet,
   TouchableOpacity,
 } from "react-native";
+=======
+  View,
+} from "react-native";
+import { colors, radius, shadow } from "../theme";
+import { AddToPlanModal } from "./AddToPlanModal";
+>>>>>>> Stashed changes
 
 export function ExplorerView({
   searchQuery,
   filters,
   activeFilter,
-  customPlanCount,
   onSearch,
   onFilterChange,
-  onViewPlan,
   resultsContent,
+  // Modal props
+  modalVisible,
+  selectedExercise,
+  savedPlans,
+  onSelectPlan,
+  onCreateNewPlan,
+  onCloseModal,
 }) {
   function renderFilterChip(filterName) {
-    const selected = filterName === activeFilter;
+    var selected = filterName === activeFilter;
 
     function handleFilterPress() {
       if (onFilterChange) {
@@ -26,6 +38,7 @@ export function ExplorerView({
     }
 
     return (
+<<<<<<< Updated upstream
       <TouchableOpacity
         key={filterName}
         style={[styles.filterChip, selected && styles.filterChipActive]}
@@ -33,6 +46,16 @@ export function ExplorerView({
       >
         <Text style={styles.filterChipText}>{formatFilterLabel(filterName)}</Text>
       </TouchableOpacity>
+=======
+      <View key={filterName} style={[styles.filterChip, selected && styles.filterChipActive]}>
+        <Text
+          style={[styles.filterChipText, selected && styles.filterChipTextActive]}
+          onPress={handleFilterPress}
+        >
+          {formatFilterLabel(filterName)}
+        </Text>
+      </View>
+>>>>>>> Stashed changes
     );
   }
 
@@ -52,12 +75,23 @@ export function ExplorerView({
 
       <View style={styles.resultsContainer}>{resultsContent}</View>
 
+<<<<<<< Updated upstream
       <View style={styles.bottomBar}>
         <Text style={styles.bottomTitle}>Custom Plan: {customPlanCount}</Text>
         <TouchableOpacity style={styles.viewButton} onPress={onViewPlan}>
           <Text style={styles.viewButtonText}>View / Save</Text>
         </TouchableOpacity>
       </View>
+=======
+      <AddToPlanModal
+        visible={modalVisible}
+        exercise={selectedExercise}
+        savedPlans={savedPlans || []}
+        onSelectPlan={onSelectPlan}
+        onCreateNewPlan={onCreateNewPlan}
+        onClose={onCloseModal}
+      />
+>>>>>>> Stashed changes
     </View>
   );
 }
@@ -119,6 +153,7 @@ const styles = StyleSheet.create({
   resultsContainer: {
     flex: 1,
   },
+<<<<<<< Updated upstream
   bottomBar: {
     borderTopWidth: 1,
     borderTopColor: "#ddd",
@@ -137,4 +172,6 @@ const styles = StyleSheet.create({
   viewButtonText: {
     fontSize: 14,
   },
+=======
+>>>>>>> Stashed changes
 });

@@ -43,6 +43,7 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="plan" options={{ title: "Plan" }} />
         <Stack.Screen name="action/[id]" options={{ title: "Action Details", headerBackTitle: "Back" }} />
+        <Stack.Screen name="details" options={{ title: "Exercise Details", headerBackTitle: "Back" }} />
         <Stack.Screen name="planPreview" options={{ title: "Preview Plan", headerBackTitle: "Back" }} />
       </Stack>
       <GlobalToast />

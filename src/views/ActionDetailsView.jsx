@@ -1,17 +1,38 @@
 import { View, Text, ScrollView, StyleSheet } from "react-native";
 import { Image } from "expo-image";
+<<<<<<< Updated upstream
+=======
+import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { getExerciseImageSource } from "../api/exerciseDbApi";
+import { colors, radius, shadow } from "../theme";
+>>>>>>> Stashed changes
 
 export function ActionDetailsView({ exercise }) {
   if (!exercise) return null;
 
+  var hasExerciseDbImage = Boolean(exercise.exerciseDbId);
+  var hasGifUrl = Boolean(exercise.gifUrl);
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+<<<<<<< Updated upstream
       {exercise.gifUrl ? (
+        <Image
+          source={{ uri: exercise.gifUrl }}
+=======
+      {hasExerciseDbImage ? (
+        <Image
+          source={getExerciseImageSource(exercise.exerciseDbId, 360)}
+>>>>>>> Stashed changes
+          style={styles.gif}
+          contentFit="contain"
+          cachePolicy="memory-disk"
+        />
+      ) : hasGifUrl ? (
         <Image
           source={{ uri: exercise.gifUrl }}
           style={styles.gif}
           contentFit="contain"
-          cachePolicy="memory-disk"
         />
       ) : (
         <View style={styles.placeholder}>

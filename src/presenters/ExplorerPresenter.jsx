@@ -2,6 +2,8 @@ import { observer } from "mobx-react-lite";
 import { useEffect, useState } from "react";
 import { FlatList } from "react-native";
 import { getExercisesByMuscle } from "../api/exerciseDbApi";
+import { planStore } from "../model/planStore";
+import { uiStore } from "../model/uiStore";
 import { resolvePromise } from "../utils/resolvePromise";
 import { ExerciseCardView } from "../views/ExerciseCardView";
 import { ExplorerView } from "../views/ExplorerView";
@@ -13,7 +15,11 @@ const DEFAULT_FILTER = "chest";
 export default observer(function ExplorerPresenter() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState(DEFAULT_FILTER);
-  const [draftExercises, setDraftExercises] = useState([]);
+
+  // Modal state
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedExercise, setSelectedExercise] = useState(null);
+
   const [searchPromiseState, setSearchPromiseState] = useState({
     promise: null,
     data: null,
@@ -33,37 +39,49 @@ export default observer(function ExplorerPresenter() {
     fetchExercisesByFilter(muscle);
   }
 
+  // ── Add button → open modal ──
   function onAddExerciseACB(exercise) {
-    if (!exercise || !exercise.id) {
-      return;
-    }
-
-    setDraftExercises(function updateDraftExercises(currentExercises) {
-      const existingExercise = currentExercises.find(function matchExerciseCB(item) {
-        return item.id === exercise.id;
-      });
-
-      if (existingExercise) {
-        return currentExercises.filter(function keepExerciseCB(item) {
-          return item.id !== exercise.id;
-        });
-      }
-
-      return currentExercises.concat([exercise]);
-    });
+    if (!exercise || !exercise.id) return;
+    setSelectedExercise(exercise);
+    setModalVisible(true);
   }
 
-  function onViewPlanACB() {
-    // TODO: connect to details/save flow later in the project.
+  // ── Modal: select existing plan ──
+  function onSelectPlanACB(planId) {
+    if (!selectedExercise) return;
+    var result = planStore.addExerciseToPlan(planId, selectedExercise);
+    if (result === "duplicate") {
+      uiStore.showToast("⚠️ This exercise is already in that plan.", "warning");
+    } else if (result === "added") {
+      uiStore.showToast("✅ Exercise added to plan!", "success");
+    }
+    setModalVisible(false);
+    setSelectedExercise(null);
+  }
+
+  // ── Modal: create new plan + add exercise ──
+  function onCreateNewPlanACB(planName) {
+    var newPlan = planStore.createNewPlan(planName);
+    if (selectedExercise && newPlan) {
+      planStore.addExerciseToPlan(newPlan.id, selectedExercise);
+    }
+    uiStore.showToast("✅ New plan created & exercise added!", "success");
+    setModalVisible(false);
+    setSelectedExercise(null);
+  }
+
+  function onCloseModalACB() {
+    setModalVisible(false);
+    setSelectedExercise(null);
   }
 
   function fetchExercisesByFilter(muscle) {
-    const promiseState = {
+    var promiseState = {
       promise: null,
       data: null,
       error: null,
     };
-    const request = getExercisesByMuscle(resolveApiMuscle(muscle)).then(
+    var request = getExercisesByMuscle(resolveApiMuscle(muscle)).then(
       function normalizeResultsCB(results) {
         return normalizeExerciseList(results);
       }
@@ -90,8 +108,8 @@ export default observer(function ExplorerPresenter() {
   }
 
   function getVisibleExercises() {
-    const exercises = searchPromiseState.data || [];
-    const normalizedQuery = (searchQuery || "").trim().toLowerCase();
+    var exercises = searchPromiseState.data || [];
+    var normalizedQuery = (searchQuery || "").trim().toLowerCase();
 
     if (!normalizedQuery) {
       return exercises;
@@ -102,19 +120,12 @@ export default observer(function ExplorerPresenter() {
     });
   }
 
-  function getAddedExerciseIds() {
-    return draftExercises.map(getExerciseIdCB);
-  }
-
   function renderExerciseItem(info) {
-    const exercise = info.item;
-    const addedExerciseIds = getAddedExerciseIds();
-    const isAdded = addedExerciseIds.indexOf(exercise.id) >= 0;
+    var exercise = info.item;
 
     return (
       <ExerciseCardView
         exercise={exercise}
-        isAdded={isAdded}
         onAdd={onAddExerciseACB}
       />
     );
@@ -125,8 +136,8 @@ export default observer(function ExplorerPresenter() {
   }
 
   function renderResultsContent() {
-    const exercises = getVisibleExercises();
-    const loading =
+    var exercises = getVisibleExercises();
+    var loading =
       searchPromiseState.promise &&
       searchPromiseState.data === null &&
       searchPromiseState.error === null;
@@ -158,11 +169,15 @@ export default observer(function ExplorerPresenter() {
       searchQuery={searchQuery}
       filters={FILTERS}
       activeFilter={activeFilter}
-      customPlanCount={draftExercises.length}
       onSearch={onSearchACB}
       onFilterChange={onFilterChangeACB}
-      onViewPlan={onViewPlanACB}
       resultsContent={renderResultsContent()}
+      modalVisible={modalVisible}
+      selectedExercise={selectedExercise}
+      savedPlans={planStore.savedPlans}
+      onSelectPlan={onSelectPlanACB}
+      onCreateNewPlan={onCreateNewPlanACB}
+      onCloseModal={onCloseModalACB}
     />
   );
 });
@@ -179,19 +194,27 @@ function normalizeExerciseList(exercises) {
 }
 
 function normalizeExerciseCB(exercise) {
+<<<<<<< Updated upstream
   const instructions = Array.isArray(exercise.instructions)
     ? exercise.instructions.join(" ")
     : exercise.instructions || "";
   const imageUrl =
+=======
+  var imageUrl =
+>>>>>>> Stashed changes
     exercise.gifUrl ||
     exercise.imageUrl ||
     exercise.image ||
     "";
+  var exerciseId = String(exercise.id);
 
   return {
-    id: String(exercise.id),
+    id: exerciseId,
+    exerciseDbId: exerciseId,
     name: exercise.name,
     targetMuscle: exercise.target || exercise.targetMuscle || "Unknown",
+    bodyPart: exercise.bodyPart || "",
+    equipment: exercise.equipment || "",
     gifUrl: imageUrl,
     instructions: instructions,
     sets: 3,
@@ -201,8 +224,4 @@ function normalizeExerciseCB(exercise) {
 
 function hasExerciseIdCB(exercise) {
   return Boolean(exercise && exercise.id);
-}
-
-function getExerciseIdCB(exercise) {
-  return exercise.id;
 }

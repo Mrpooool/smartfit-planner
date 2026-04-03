@@ -1,12 +1,19 @@
 import { View, Text, TextInput, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
 import { Image } from "expo-image";
+<<<<<<< Updated upstream
+=======
+import { Ionicons } from "@expo/vector-icons";
+import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { getExerciseImageSource } from "../api/exerciseDbApi";
+import { colors, radius, shadow } from "../theme";
+>>>>>>> Stashed changes
 
 /**
  * Pure View component — only receives props, never accesses store.
  *
  * Props:
  *  - plan: WorkoutPlan | null
- *  - onSavePlan()        → save to library
+ *  - onSavePlan()        → save generated plan to library (preview mode only)
  *  - onMarkCompleted()   → mark today as completed
  *  - onEditExercise(idx, field, value) → edit sets/reps
  *  - onRenamePlan(name)  → rename plan
@@ -20,11 +27,17 @@ export function PlanView({
   onPressExercise,
   onRenamePlan,
   onDeletePlan,
+  onBack,
   previewMode = false,
 }) {
   if (!plan) {
     return (
       <View style={styles.emptyContainer}>
+        {onBack ? (
+          <TouchableOpacity style={styles.backButton} onPress={onBack}>
+            <Text style={styles.backButtonText}>← My Plans</Text>
+          </TouchableOpacity>
+        ) : null}
         <Text style={styles.emptyIcon}>📋</Text>
         <Text style={styles.emptyText}>No plan selected.</Text>
         <Text style={styles.emptyHint}>Go generate or explore a plan first!</Text>
@@ -33,12 +46,27 @@ export function PlanView({
   }
 
   function renderExerciseCB(exercise, index) {
+    // Determine image source — prefer exerciseDbId (API proxy), fallback to gifUrl
+    var hasExerciseDbImage = Boolean(exercise.exerciseDbId);
+    var hasGifUrl = Boolean(exercise.gifUrl);
+
     return (
       <View key={exercise.id || index} style={styles.exerciseCard}>
         <TouchableOpacity activeOpacity={0.7} onPress={function onExercisePressCB() { onPressExercise(index); }}>
           {/* Exercise GIF */}
+<<<<<<< Updated upstream
           {exercise.gifUrl ? (
             <Image
+=======
+          {hasExerciseDbImage ? (
+            <Image
+              source={getExerciseImageSource(exercise.exerciseDbId, 360)}
+              style={styles.gif}
+              contentFit="contain"
+            />
+          ) : hasGifUrl ? (
+            <Image
+>>>>>>> Stashed changes
               source={{ uri: exercise.gifUrl }}
               style={styles.gif}
               contentFit="contain"
@@ -84,6 +112,24 @@ export function PlanView({
           </View>
         </View>
 
+        {/* Instructions */}
+        {exercise.instructions && (Array.isArray(exercise.instructions) ? exercise.instructions.length > 0 : exercise.instructions.length > 0) ? (
+          <View style={styles.instructionsBox}>
+            <Text style={styles.instructionsTitle}>Instructions</Text>
+            {Array.isArray(exercise.instructions) ? (
+              exercise.instructions.map(function renderStepCB(step, i) {
+                return (
+                  <Text key={i} style={styles.instructions}>
+                    {i + 1}. {step}
+                  </Text>
+                );
+              })
+            ) : (
+              <Text style={styles.instructions}>{exercise.instructions}</Text>
+            )}
+          </View>
+        ) : null}
+
       </View>
     );
   }
@@ -93,6 +139,13 @@ export function PlanView({
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      {/* Back button */}
+      {onBack ? (
+        <TouchableOpacity style={styles.backButton} onPress={onBack}>
+          <Text style={styles.backButtonText}>← My Plans</Text>
+        </TouchableOpacity>
+      ) : null}
+
       {/* Plan Name — editable */}
       <Text style={styles.label}>Plan Name</Text>
       <TextInput
@@ -113,10 +166,6 @@ export function PlanView({
         </TouchableOpacity>
       ) : (
         <>
-          <TouchableOpacity style={styles.saveButton} onPress={onSavePlan}>
-            <Text style={styles.buttonText}>⭐  SAVE PLAN TO LIBRARY</Text>
-          </TouchableOpacity>
-
           <TouchableOpacity 
             style={isCompletedToday ? styles.completeButtonDisabled : styles.completeButton} 
             onPress={onMarkCompleted}
@@ -127,7 +176,8 @@ export function PlanView({
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.deleteButton} onPress={onDeletePlan}>
-            <Text style={styles.deleteButtonText}>🗑️  Delete Plan</Text>
+            <Ionicons name="remove-circle-outline" size={20} color={colors.error} style={{ marginRight: 6 }} />
+            <Text style={styles.deleteButtonText}>Delete Plan</Text>
           </TouchableOpacity>
         </>
       )}
@@ -140,6 +190,10 @@ const styles = StyleSheet.create({
   // Container
   container: { flex: 1, backgroundColor: "#f9fafb" },
   content: { padding: 20, paddingBottom: 40 },
+
+  // Back button
+  backButton: { marginBottom: 12 },
+  backButtonText: { fontSize: 16, fontWeight: "600", color: colors.primary },
 
   // Empty state
   emptyContainer: { flex: 1, justifyContent: "center", alignItems: "center", padding: 40 },
@@ -184,7 +238,13 @@ const styles = StyleSheet.create({
   },
 
   // Instructions
+<<<<<<< Updated upstream
   instructions: { fontSize: 13, color: "#4b5563", lineHeight: 18, marginTop: 4 },
+=======
+  instructionsBox: { marginTop: 8, paddingTop: 8, borderTopWidth: 1, borderTopColor: colors.border },
+  instructionsTitle: { fontSize: 13, fontWeight: "600", color: colors.textSecondary, marginBottom: 4 },
+  instructions: { fontSize: 13, color: colors.textMuted, lineHeight: 18, marginTop: 4 },
+>>>>>>> Stashed changes
 
   // Buttons
   saveButton: {
@@ -201,8 +261,14 @@ const styles = StyleSheet.create({
   },
   buttonTextDisabled: { color: "#6b7280", fontWeight: "bold", fontSize: 15 },
   deleteButton: {
+<<<<<<< Updated upstream
     backgroundColor: "transparent", padding: 16, borderRadius: 12,
     alignItems: "center", marginTop: 12, borderWidth: 1, borderColor: "#ef4444",
+=======
+    flexDirection: "row", justifyContent: "center",
+    backgroundColor: "transparent", padding: 16, borderRadius: radius.md,
+    alignItems: "center", marginTop: 12, borderWidth: 1, borderColor: colors.error,
+>>>>>>> Stashed changes
   },
   buttonText: { color: "#fff", fontWeight: "bold", fontSize: 15 },
   deleteButtonText: { color: "#ef4444", fontWeight: "bold", fontSize: 15 },

@@ -1,7 +1,11 @@
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Image } from "expo-image";
 
+<<<<<<< Updated upstream
 export function ExerciseCardView({ exercise, isAdded, onAdd }) {
+=======
+export function ExerciseCardView({ exercise, onAdd, onPress }) {
+>>>>>>> Stashed changes
   function handleAddPress() {
     if (onAdd) {
       onAdd(exercise);
@@ -28,6 +32,7 @@ export function ExerciseCardView({ exercise, isAdded, onAdd }) {
 
   return (
     <View style={styles.card}>
+<<<<<<< Updated upstream
       {renderImageSection()}
       <View style={styles.info}>
         <Text style={styles.name}>{exercise?.name}</Text>
@@ -36,6 +41,21 @@ export function ExerciseCardView({ exercise, isAdded, onAdd }) {
       </View>
       <TouchableOpacity style={styles.addButton} onPress={handleAddPress}>
         <Text style={styles.addButtonText}>{isAdded ? "Added" : "Add"}</Text>
+=======
+      <TouchableOpacity style={styles.cardMain} onPress={handleCardPress} activeOpacity={0.7}>
+        {renderImageSection()}
+        <View style={styles.info}>
+          <Text style={styles.name} numberOfLines={2}>{exercise?.name}</Text>
+          <Text style={styles.muscle}>{exercise?.targetMuscle}</Text>
+        </View>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.addButton}
+        onPress={handleAddPress}
+        activeOpacity={0.7}
+      >
+        <Text style={styles.addButtonText}>＋ Add</Text>
+>>>>>>> Stashed changes
       </TouchableOpacity>
     </View>
   );
@@ -76,6 +96,7 @@ const styles = StyleSheet.create({
     color: "#999",
   },
   addButton: {
+<<<<<<< Updated upstream
     borderWidth: 1,
     borderColor: "#999",
     paddingHorizontal: 10,
@@ -83,5 +104,16 @@ const styles = StyleSheet.create({
   },
   addButtonText: {
     fontSize: 13,
+=======
+    backgroundColor: colors.primary,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: radius.sm,
+  },
+  addButtonText: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: colors.card,
+>>>>>>> Stashed changes
   },
 });

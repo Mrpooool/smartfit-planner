@@ -1,5 +1,6 @@
 import { observer } from "mobx-react-lite";
 import { useRouter } from "expo-router";
+import { action } from "mobx";
 import { planStore } from "../model/planStore";
 import { uiStore } from "../model/uiStore";
 import { PlanView } from "../views/PlanView";
@@ -27,8 +28,24 @@ export default observer(function PlanPreviewPresenter() {
   }
 
   function onPressExerciseACB(index) {
-    router.push(`/action/${index}?source=generated`);
+    router.push("/action/" + index + "?source=generated");
   }
+
+  // ── Editable handlers for previewed plan ──
+
+  var onEditExerciseACB = action(function onEditExerciseACB(exerciseIndex, field, value) {
+    var num = parseInt(value, 10);
+    if (isNaN(num) || num < 0) return;
+    if (!planStore.generatedPlan) return;
+    var exercises = [...planStore.generatedPlan.exercises];
+    exercises[exerciseIndex] = { ...exercises[exerciseIndex], [field]: num };
+    planStore.generatedPlan = { ...planStore.generatedPlan, exercises: exercises };
+  });
+
+  var onRenamePlanACB = action(function onRenamePlanACB(newName) {
+    if (!planStore.generatedPlan) return;
+    planStore.generatedPlan = { ...planStore.generatedPlan, name: newName };
+  });
 
   return (
     <PlanView
@@ -36,11 +53,10 @@ export default observer(function PlanPreviewPresenter() {
       previewMode={true}
       onSavePlan={onAddToPlanACB}
       onPressExercise={onPressExerciseACB}
-      // To be done soon
-      onMarkCompleted={() => {}}
-      onEditExercise={() => {}}
-      onRenamePlan={() => {}}
-      onDeletePlan={() => {}}
+      onMarkCompleted={function () {}}
+      onEditExercise={onEditExerciseACB}
+      onRenamePlan={onRenamePlanACB}
+      onDeletePlan={function () {}}
     />
   );
 });

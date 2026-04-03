@@ -60,11 +60,62 @@ const model = {
     const exercises = [...this.currentPlan.exercises];
     exercises[exerciseIndex] = { ...exercises[exerciseIndex], [field]: value };
     this.currentPlan = { ...this.currentPlan, exercises };
+    
+    // Auto-sync
+    const currentId = this.currentPlan.id;
+    this.savedPlans = this.savedPlans.map(function mapCB(p) {
+      return p.id === currentId ? { ...p, exercises: exercises } : p;
+    });
   }),
 
   renamePlan: action(function renamePlan(newName) {
     if (!this.currentPlan) return;
     this.currentPlan = { ...this.currentPlan, name: newName };
+
+    // Auto-sync
+    const currentId = this.currentPlan.id;
+    this.savedPlans = this.savedPlans.map(function mapCB(p) {
+      return p.id === currentId ? { ...p, name: newName } : p;
+    });
+  }),
+
+  createNewPlan: action(function createNewPlan(name) {
+    const newPlan = {
+      id: `custom-${Date.now()}-${Math.floor(Math.random() * 1000000)}`,
+      name: name || "New Plan",
+      createdAt: Date.now(),
+      completedDates: [],
+      exercises: [],
+    };
+    this.savedPlans = [...this.savedPlans, newPlan];
+    this.currentPlan = newPlan;
+    return newPlan;
+  }),
+
+  addExerciseToPlan: action(function addExerciseToPlan(planId, exercise) {
+    var targetPlan = null;
+    for (var i = 0; i < this.savedPlans.length; i++) {
+      if (this.savedPlans[i].id === planId) {
+        targetPlan = this.savedPlans[i];
+        break;
+      }
+    }
+    if (!targetPlan) return "not_found";
+
+    var isDuplicate = (targetPlan.exercises || []).some(function matchCB(ex) {
+      return ex.id === exercise.id;
+    });
+    if (isDuplicate) return "duplicate";
+
+    var updatedExercises = [...(targetPlan.exercises || []), exercise];
+    this.savedPlans = this.savedPlans.map(function mapCB(p) {
+      return p.id === planId ? { ...p, exercises: updatedExercises } : p;
+    });
+
+    if (this.currentPlan && this.currentPlan.id === planId) {
+      this.currentPlan = { ...this.currentPlan, exercises: updatedExercises };
+    }
+    return "added";
   }),
 };
 
