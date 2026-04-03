@@ -1,8 +1,7 @@
-import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { getExerciseImageSource } from "../api/exerciseDbApi";
-import { colors, radius, shadow } from "../theme";
+import { colors, radius } from "../theme";
+import { ExerciseImage } from "./common/ExerciseImage";
 
 /**
  * Pure View component — only receives props, never accesses store.
@@ -42,33 +41,12 @@ export function PlanView({
   }
 
   function renderExerciseCB(exercise, index) {
-    // Determine image source — prefer exerciseDbId (API proxy), fallback to gifUrl
-    let hasExerciseDbImage = Boolean(exercise.exerciseDbId);
-    let hasGifUrl = Boolean(exercise.gifUrl);
-
     return (
       <View key={exercise.id || index} style={styles.exerciseCard}>
         <TouchableOpacity activeOpacity={0.7} onPress={function onExercisePressCB() { onPressExercise(index); }}>
-          {/* Exercise GIF */}
-          {hasExerciseDbImage ? (
-            <Image
-              source={getExerciseImageSource(exercise.exerciseDbId, 360)}
-              style={styles.gif}
-              contentFit="contain"
-            />
-          ) : hasGifUrl ? (
-            <Image
-              source={{ uri: exercise.gifUrl }}
-              style={styles.gif}
-              contentFit="contain"
-            />
-          ) : (
-            <View style={styles.gifPlaceholder}>
-              <Text style={styles.gifPlaceholderText}>🏋️</Text>
-            </View>
-          )}
+          {/* 计划页的大图同样交给共享组件处理，避免第三方图片接口失败时直接留空。 */}
+          <ExerciseImage exercise={exercise} style={styles.gif} contentFit="contain" />
 
-          {/* Exercise Info */}
           <Text style={styles.exerciseName}>
             {index + 1}. {exercise.name}
           </Text>
@@ -77,7 +55,6 @@ export function PlanView({
           </Text>
         </TouchableOpacity>
 
-        {/* Editable Sets & Reps */}
         <View style={styles.setsRepsRow}>
           <View style={styles.fieldGroup}>
             <Text style={styles.fieldLabel}>Sets</Text>
@@ -103,7 +80,6 @@ export function PlanView({
           </View>
         </View>
 
-        {/* Instructions */}
         {exercise.instructions && (Array.isArray(exercise.instructions) ? exercise.instructions.length > 0 : exercise.instructions.length > 0) ? (
           <View style={styles.instructionsBox}>
             <Text style={styles.instructionsTitle}>Instructions</Text>
@@ -120,7 +96,6 @@ export function PlanView({
             )}
           </View>
         ) : null}
-
       </View>
     );
   }
@@ -130,14 +105,12 @@ export function PlanView({
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* Back button */}
       {onBack ? (
         <TouchableOpacity style={styles.backButton} onPress={onBack}>
           <Text style={styles.backButtonText}>← My Plans</Text>
         </TouchableOpacity>
       ) : null}
 
-      {/* Plan Name — editable */}
       <Text style={styles.label}>Plan Name</Text>
       <TextInput
         style={styles.planNameInput}
@@ -147,18 +120,16 @@ export function PlanView({
         onChangeText={onRenamePlan}
       />
 
-      {/* Exercise List */}
       {(plan.exercises || []).map(renderExerciseCB)}
 
-      {/* Action Buttons */}
       {previewMode ? (
         <TouchableOpacity style={styles.saveButton} onPress={onSavePlan}>
           <Text style={styles.buttonText}>➕  ADD TO MY PLAN</Text>
         </TouchableOpacity>
       ) : (
         <>
-          <TouchableOpacity 
-            style={isCompletedToday ? styles.completeButtonDisabled : styles.completeButton} 
+          <TouchableOpacity
+            style={isCompletedToday ? styles.completeButtonDisabled : styles.completeButton}
             onPress={onMarkCompleted}
           >
             <Text style={isCompletedToday ? styles.buttonTextDisabled : styles.buttonText}>
@@ -176,31 +147,21 @@ export function PlanView({
   );
 }
 
-// ── Styles ──────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  // Container
   container: { flex: 1, backgroundColor: "#f9fafb" },
   content: { padding: 20, paddingBottom: 40 },
-
-  // Back button
   backButton: { marginBottom: 12 },
   backButtonText: { fontSize: 16, fontWeight: "600", color: colors.primary },
-
-  // Empty state
   emptyContainer: { flex: 1, justifyContent: "center", alignItems: "center", padding: 40 },
   emptyIcon: { fontSize: 48, marginBottom: 12 },
   emptyText: { fontSize: 18, fontWeight: "600", color: "#374151" },
   emptyHint: { fontSize: 14, color: "#9ca3af", marginTop: 6 },
-
-  // Plan name input
   label: { fontSize: 13, fontWeight: "600", color: "#6b7280", marginBottom: 6 },
   planNameInput: {
     fontSize: 20, fontWeight: "700", color: "#111827",
     borderBottomWidth: 2, borderBottomColor: "#6366f1",
     paddingVertical: 8, marginBottom: 24,
   },
-
-  // Exercise card
   exerciseCard: {
     backgroundColor: "#ffffff", borderRadius: 14,
     padding: 16, marginBottom: 16,
@@ -208,16 +169,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05, shadowRadius: 4, elevation: 2,
   },
   gif: { width: "100%", height: 200, borderRadius: 10, marginBottom: 12 },
-  gifPlaceholder: {
-    width: "100%", height: 120, borderRadius: 10,
-    backgroundColor: "#f3f4f6", justifyContent: "center", alignItems: "center",
-    marginBottom: 12,
-  },
-  gifPlaceholderText: { fontSize: 36 },
   exerciseName: { fontSize: 17, fontWeight: "700", color: "#111827" },
   targetMuscle: { fontSize: 13, color: "#6366f1", marginTop: 2, marginBottom: 10 },
-
-  // Sets & Reps
   setsRepsRow: { flexDirection: "row", gap: 16, marginBottom: 10 },
   fieldGroup: { flex: 1 },
   fieldLabel: { fontSize: 12, fontWeight: "600", color: "#6b7280", marginBottom: 4 },
@@ -227,13 +180,9 @@ const styles = StyleSheet.create({
     fontSize: 16, fontWeight: "600", color: "#111827",
     textAlign: "center",
   },
-
-  // Instructions
   instructionsBox: { marginTop: 8, paddingTop: 8, borderTopWidth: 1, borderTopColor: colors.border },
   instructionsTitle: { fontSize: 13, fontWeight: "600", color: colors.textSecondary, marginBottom: 4 },
   instructions: { fontSize: 13, color: colors.textMuted, lineHeight: 18, marginTop: 4 },
-
-  // Buttons
   saveButton: {
     backgroundColor: "#6366f1", padding: 16, borderRadius: 12,
     alignItems: "center", marginTop: 20,

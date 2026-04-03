@@ -1,7 +1,6 @@
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { Image } from "expo-image";
-import { getExerciseImageSource } from "../api/exerciseDbApi";
 import { colors, radius, shadow } from "../theme";
+import { ExerciseImage } from "./common/ExerciseImage";
 
 export function ExerciseCardView({ exercise, isAdded, onAdd, onPress }) {
   function handleAddPress() {
@@ -17,30 +16,14 @@ export function ExerciseCardView({ exercise, isAdded, onAdd, onPress }) {
   }
 
   function renderImageSection() {
-    if (exercise?.gifUrl) {
-      return (
-        <Image
-          source={{ uri: exercise.gifUrl }}
-          style={styles.image}
-          contentFit="cover"
-        />
-      );
-    }
-
-    if (exercise?.id) {
-      return (
-        <Image
-          source={getExerciseImageSource(exercise.id, 360)}
-          style={styles.image}
-          contentFit="cover"
-        />
-      );
-    }
-
     return (
-      <View style={[styles.image, styles.placeholder]}>
-        <Text style={styles.placeholderText}>🏋️</Text>
-      </View>
+      // 卡片缩略图也走统一组件，确保列表页和详情页的缺图回退行为一致。
+      <ExerciseImage
+        exercise={exercise}
+        style={styles.image}
+        contentFit="cover"
+        variant="compact"
+      />
     );
   }
 
@@ -87,13 +70,6 @@ const styles = StyleSheet.create({
     height: 64,
     borderRadius: radius.sm,
     backgroundColor: colors.surface,
-  },
-  placeholder: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  placeholderText: {
-    fontSize: 24,
   },
   info: {
     flex: 1,

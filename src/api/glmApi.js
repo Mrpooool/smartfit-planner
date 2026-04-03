@@ -3,27 +3,49 @@
 
 const GLM_API_URL = "https://open.bigmodel.cn/api/paas/v4/chat/completions";
 const GLM_API_KEY = process.env.EXPO_PUBLIC_GLM_API_KEY;
+const SEARCH_NAME_ALIASES = {
+  "push up": "push-up",
+  pushup: "push-up",
+  pushups: "push-up",
+  "air squat": "squat",
+  "bodyweight squat": "squat",
+  "abdominal crunch": "crunch",
+  "glute bridge hold": "glute bridge",
+  "walking lunges": "lunge",
+};
 
 export async function generateWorkoutPlan(duration, equipment, targetMuscle) {
   if (!GLM_API_KEY) {
     throw new Error("Missing EXPO_PUBLIC_GLM_API_KEY.");
   }
 
-  const equipmentText = Array.isArray(equipment) ? equipment.join(", ") : String(equipment);
+  const equipmentText =
+    Array.isArray(equipment) && equipment.length > 0
+      ? equipment.join(", ")
+      : "bodyweight";
+  const exerciseCountGuidance = getExerciseCountGuidance(duration);
 
   const messages = [
     {
       role: "system",
       content:
-        "You are a helpful fitness assistant that creates workout plans based on user conditions. " +
-        "Respond ONLY with valid JSON (no markdown, no extra text). " +
-        "Return this JSON shape:\n" +
+        "Create workout plans and reply with JSON only. " +
+        "Use common English exercise names that can be found in a public exercise database. " +
+        "Keep searchName short, lowercase, and database-friendly. " +
+        "Avoid fancy modifiers unless they are essential to identify the movement. " +
+        "displayName should stay short and natural. " +
+        "sets and reps must be positive integers. " +
+        "Return this shape:\n" +
         JSON.stringify(
           {
             name: "Plan Name",
             exercises: [
               {
                 name: "Exercise Name",
+                displayName: "Exercise Name",
+                searchName: "exercise name",
+                targetMuscle: "chest",
+                equipment: "bodyweight",
                 sets: 3,
                 reps: 12,
               },
@@ -31,14 +53,17 @@ export async function generateWorkoutPlan(duration, equipment, targetMuscle) {
           },
           null,
           2
-        ) +
-        "\nThe numbers above are examples only. sets and reps must be integers and should be chosen dynamically for each request.",
+        ),
     },
     {
       role: "user",
       content:
         `Create a ${duration}-minute workout plan using ${equipmentText} equipment, targeting ${targetMuscle}. ` +
-        "Use integer numbers for sets and reps.",
+        `${exerciseCountGuidance}. ` +
+        "Choose realistic exercises for the time available. " +
+        "Keep the plan concise; do not pad it with extra exercises just to increase variety. " +
+        "Fewer exercises with sensible sets are better than a long list of movements. " +
+        "Use names that are easy to search in an exercise database.",
     },
   ];
 
@@ -51,7 +76,7 @@ export async function generateWorkoutPlan(duration, equipment, targetMuscle) {
     body: JSON.stringify({
       model: "GLM-4-Flash-250414",
       messages,
-      temperature: 1,
+      temperature: 0.4,
       response_format: { type: "json_object" },
     }),
   });
@@ -63,9 +88,24 @@ export async function generateWorkoutPlan(duration, equipment, targetMuscle) {
 
   const data = await response.json();
   const content = data?.choices?.[0]?.message?.content;
-  const plan = parseModelJsonContent(content);
+  const plan = normalizeWorkoutPlan(parseModelJsonContent(content), targetMuscle, equipmentText);
   validateWorkoutPlan(plan);
   return plan;
+}
+
+function getExerciseCountGuidance(duration) {
+  const minutes = Number(duration) || 30;
+
+  // 当前表单只有 15、30、60 三个时长选项，所以这里直接按这三档给更精简的规则。
+  if (minutes <= 15) {
+    return "Return exactly 3 exercises";
+  }
+
+  if (minutes <= 30) {
+    return "Return exactly 4 exercises";
+  }
+
+  return "Return exactly 6 exercises";
 }
 
 function parseModelJsonContent(content) {
@@ -81,6 +121,47 @@ function parseModelJsonContent(content) {
   } catch {
     throw new Error("GLM returned non-JSON content.");
   }
+}
+
+function normalizeWorkoutPlan(plan, fallbackTargetMuscle, fallbackEquipment) {
+  if (!plan || typeof plan !== "object") {
+    return plan;
+  }
+
+  const normalizedExercises = Array.isArray(plan.exercises)
+    ? plan.exercises.map(function normalizeExerciseCB(item) {
+        const baseName = String(item?.displayName || item?.name || "").trim();
+        const normalizedName = baseName || "Exercise";
+
+        return {
+          ...item,
+          name: normalizedName,
+          displayName: String(item?.displayName || normalizedName).trim(),
+          searchName: normalizeSearchName(item?.searchName || normalizedName),
+          targetMuscle: String(item?.targetMuscle || fallbackTargetMuscle || "").trim(),
+          equipment: String(item?.equipment || fallbackEquipment || "").trim(),
+        };
+      })
+    : plan.exercises;
+
+  return {
+    ...plan,
+    name: String(plan.name || "").trim(),
+    exercises: normalizedExercises,
+  };
+}
+
+function normalizeSearchName(value) {
+  const normalized = String(value || "")
+    .toLowerCase()
+    .replace(/[()]/g, " ")
+    .replace(/[^a-z0-9+\-\s]/g, " ")
+    .replace(/\b(beginner|advanced|fat burning|fat-burning|explosive|power|combo|circuit)\b/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  // 只做少量高频别名归一化，避免把动作语义改得太激进。
+  return SEARCH_NAME_ALIASES[normalized] || normalized;
 }
 
 function validateWorkoutPlan(plan) {
@@ -101,6 +182,14 @@ function validateWorkoutPlan(plan) {
       item &&
       typeof item.name === "string" &&
       item.name.trim() &&
+      typeof item.displayName === "string" &&
+      item.displayName.trim() &&
+      typeof item.searchName === "string" &&
+      item.searchName.trim() &&
+      typeof item.targetMuscle === "string" &&
+      item.targetMuscle.trim() &&
+      typeof item.equipment === "string" &&
+      item.equipment.trim() &&
       Number.isInteger(item.sets) &&
       item.sets > 0 &&
       Number.isInteger(item.reps) &&

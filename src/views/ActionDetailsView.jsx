@@ -1,41 +1,21 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { Image } from "expo-image";
-import { getExerciseImageSource } from "../api/exerciseDbApi";
+import { ExerciseImage } from "./common/ExerciseImage";
 
 export function ActionDetailsView({ exercise }) {
   if (!exercise) return null;
 
-  let hasExerciseDbImage = Boolean(exercise.exerciseDbId);
-  let hasGifUrl = Boolean(exercise.gifUrl);
-
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {hasExerciseDbImage ? (
-        <Image
-          source={getExerciseImageSource(exercise.exerciseDbId, 360)}
-          style={styles.gif}
-          contentFit="contain"
-          cachePolicy="memory-disk"
-        />
-      ) : hasGifUrl ? (
-        <Image
-          source={{ uri: exercise.gifUrl }}
-          style={styles.gif}
-          contentFit="contain"
-        />
-      ) : (
-        <View style={styles.placeholder}>
-          <Text style={styles.placeholderIcon}>🏋️</Text>
-        </View>
-      )}
+      {/* 详情页复用同一套图源优先级和占位策略，保证和列表页展示一致。 */}
+      <ExerciseImage exercise={exercise} style={styles.gif} contentFit="contain" />
 
       <Text style={styles.title}>{exercise.name}</Text>
-      
+
       <View style={styles.infoCard}>
         <Text style={styles.infoLabel}>Target Muscle</Text>
         <Text style={styles.infoValue}>{exercise.targetMuscle}</Text>
       </View>
-      
+
       <View style={styles.infoCard}>
         <Text style={styles.infoLabel}>Body Part</Text>
         <Text style={styles.infoValue}>{exercise.bodyPart || "Unknown"}</Text>
@@ -68,12 +48,6 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f9fafb" },
   content: { padding: 20, paddingBottom: 40 },
   gif: { width: "100%", height: 300, borderRadius: 16, marginBottom: 24 },
-  placeholder: {
-    width: "100%", height: 300, borderRadius: 16,
-    backgroundColor: "#e5e7eb", justifyContent: "center", alignItems: "center",
-    marginBottom: 24,
-  },
-  placeholderIcon: { fontSize: 64 },
   title: { fontSize: 28, fontWeight: "800", color: "#111827", marginBottom: 24, textTransform: "capitalize" },
   infoCard: {
     flexDirection: "row", justifyContent: "space-between", alignItems: "center",

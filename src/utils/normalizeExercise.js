@@ -4,10 +4,11 @@ export function normalizeExerciseFromDb(exercise, overrides = {}) {
   return {
     id: exerciseDbId,
     exerciseDbId: exerciseDbId,
-    name: exercise?.name || overrides.name || "Unknown",
-    targetMuscle: exercise?.target || exercise?.targetMuscle || overrides.targetMuscle || "Unknown",
+    name: overrides.displayName || overrides.name || exercise?.name || "Unknown",
+    searchName: overrides.searchName || exercise?.name || "",
+    targetMuscle: overrides.targetMuscle || exercise?.target || exercise?.targetMuscle || "Unknown",
     bodyPart: exercise?.bodyPart || "",
-    equipment: exercise?.equipment || overrides.equipment || "Unknown",
+    equipment: overrides.equipment || exercise?.equipment || "Unknown",
     gifUrl: exercise?.gifUrl || exercise?.imageUrl || exercise?.image || "",
     instructions: Array.isArray(exercise?.instructions)
       ? exercise.instructions

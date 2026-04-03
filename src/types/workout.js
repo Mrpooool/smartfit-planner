@@ -1,12 +1,16 @@
 /**
  * @typedef {Object} Exercise
- * @property {string} id           - ExerciseDB unique ID
- * @property {string} name         - Exercise name (e.g. "Push-up")
- * @property {string} targetMuscle - Primary muscle group (e.g. "chest")
- * @property {string} gifUrl       - URL to exercise demonstration GIF
- * @property {string} instructions - Step-by-step instructions
- * @property {number} sets         - Number of sets
- * @property {number} reps         - Number of reps per set
+ * @property {string} id                - Local or ExerciseDB unique ID
+ * @property {string} exerciseDbId      - ExerciseDB unique ID when available
+ * @property {string} name              - Exercise display name (e.g. "Push-up")
+ * @property {string} searchName        - Normalized lookup name used for database search
+ * @property {string} targetMuscle      - Primary muscle group (e.g. "chest")
+ * @property {string} bodyPart          - Broad body-part category from ExerciseDB
+ * @property {string} equipment         - Required equipment name
+ * @property {string} gifUrl            - URL to exercise demonstration GIF
+ * @property {string[]|string} instructions - Step-by-step instructions
+ * @property {number} sets              - Number of sets
+ * @property {number} reps              - Number of reps per set
  */
 
 /**

@@ -43,6 +43,11 @@ app-example
 # generated native folders
 /ios
 /android
+
+# Gradle local caches
+.gradle-local/
+.gradle-local-2/
+.gradle-local-3/
 .claude/worktrees/determined-matsumoto/
 
 Project_Proposal.pdf
