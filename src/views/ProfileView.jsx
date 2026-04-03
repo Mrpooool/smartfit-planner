@@ -2,7 +2,7 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-nati
 import { CalendarView } from "./CalendarView";
 import { colors, radius, shadow } from "../theme";
 
-export function ProfileView({ email, completedDates, totalWorkouts, thisWeekCount, savedPlansCount, onOpenPlans, onLogout }) {
+export function ProfileView({ email, completedDates, totalWorkouts, thisWeekCount, savedPlansCount, onNavigateToPlans, onLogout }) {
   const avatarLetter = email ? email[0].toUpperCase() : "?";
 
   return (
@@ -25,16 +25,11 @@ export function ProfileView({ email, completedDates, totalWorkouts, thisWeekCoun
           <Text style={styles.statNumber}>{thisWeekCount}</Text>
           <Text style={styles.statLabel}>This{"\n"}Week</Text>
         </View>
-        <View style={styles.statCard}>
+        <TouchableOpacity style={styles.statCard} onPress={onNavigateToPlans}>
           <Text style={styles.statNumber}>{savedPlansCount}</Text>
           <Text style={styles.statLabel}>Saved{"\n"}Plans</Text>
-        </View>
+        </TouchableOpacity>
       </View>
-
-      <Text style={styles.sectionTitle}>My Saved Plans</Text>
-      <TouchableOpacity style={styles.libraryButton} onPress={onOpenPlans}>
-        <Text style={styles.libraryButtonText}>Open Saved Plans</Text>
-      </TouchableOpacity>
 
       <Text style={styles.sectionTitle}>Workout Calendar</Text>
       <CalendarView completedDates={completedDates} />
@@ -107,18 +102,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     marginTop: 4,
   },
-  libraryButton: {
-    backgroundColor: colors.primary,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    borderRadius: radius.sm,
-    marginBottom: 20,
-    alignItems: "center",
-  },
-  libraryButtonText: {
-    color: colors.card,
-    fontWeight: "bold",
-  },
+
   logoutButton: {
     marginTop: 8,
     padding: 14,

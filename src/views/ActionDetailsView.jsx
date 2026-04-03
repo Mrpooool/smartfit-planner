@@ -1,18 +1,27 @@
-import { Image } from "expo-image";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { colors, radius, shadow } from "../theme";
+import { Image } from "expo-image";
+import { getExerciseImageSource } from "../api/exerciseDbApi";
 
 export function ActionDetailsView({ exercise }) {
   if (!exercise) return null;
 
+  let hasExerciseDbImage = Boolean(exercise.exerciseDbId);
+  let hasGifUrl = Boolean(exercise.gifUrl);
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {exercise.exerciseDbId ? (
+      {hasExerciseDbImage ? (
         <Image
-          source={getExerciseImageSource(exercise.exerciseDbId,360)}
+          source={getExerciseImageSource(exercise.exerciseDbId, 360)}
           style={styles.gif}
           contentFit="contain"
           cachePolicy="memory-disk"
+        />
+      ) : hasGifUrl ? (
+        <Image
+          source={{ uri: exercise.gifUrl }}
+          style={styles.gif}
+          contentFit="contain"
         />
       ) : (
         <View style={styles.placeholder}>
@@ -37,7 +46,7 @@ export function ActionDetailsView({ exercise }) {
         <Text style={styles.infoValue}>{exercise.equipment || "Unknown"}</Text>
       </View>
 
-      {exercise.instructions?.length > 0 && (
+      {exercise.instructions && (
         <View style={styles.instructionsContainer}>
           <Text style={styles.sectionTitle}>Instructions</Text>
           {Array.isArray(exercise.instructions) ? (
@@ -56,28 +65,30 @@ export function ActionDetailsView({ exercise }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
+  container: { flex: 1, backgroundColor: "#f9fafb" },
   content: { padding: 20, paddingBottom: 40 },
-  gif: { width: "100%", height: 300, borderRadius: radius.lg, marginBottom: 24 },
+  gif: { width: "100%", height: 300, borderRadius: 16, marginBottom: 24 },
   placeholder: {
-    width: "100%", height: 300, borderRadius: radius.lg,
-    backgroundColor: colors.border, justifyContent: "center", alignItems: "center",
+    width: "100%", height: 300, borderRadius: 16,
+    backgroundColor: "#e5e7eb", justifyContent: "center", alignItems: "center",
     marginBottom: 24,
   },
   placeholderIcon: { fontSize: 64 },
-  title: { fontSize: 28, fontWeight: "800", color: colors.textPrimary, marginBottom: 24, textTransform: "capitalize" },
+  title: { fontSize: 28, fontWeight: "800", color: "#111827", marginBottom: 24, textTransform: "capitalize" },
   infoCard: {
     flexDirection: "row", justifyContent: "space-between", alignItems: "center",
-    backgroundColor: colors.card, padding: 16, borderRadius: radius.md, marginBottom: 12,
-    ...shadow.sm,
+    backgroundColor: "#ffffff", padding: 16, borderRadius: 12, marginBottom: 12,
+    shadowColor: "#000", shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05, shadowRadius: 3, elevation: 2,
   },
-  infoLabel: { fontSize: 15, fontWeight: "600", color: colors.textSecondary },
-  infoValue: { fontSize: 16, fontWeight: "700", color: colors.textPrimary, textTransform: "capitalize" },
+  infoLabel: { fontSize: 15, fontWeight: "600", color: "#6b7280" },
+  infoValue: { fontSize: 16, fontWeight: "700", color: "#111827", textTransform: "capitalize" },
   instructionsContainer: {
-    backgroundColor: colors.card, padding: 20, borderRadius: radius.lg, marginTop: 12,
-    ...shadow.md,
+    backgroundColor: "#fff", padding: 20, borderRadius: 16, marginTop: 12,
+    shadowColor: "#000", shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05, shadowRadius: 4, elevation: 2,
   },
-  sectionTitle: { fontSize: 18, fontWeight: "700", color: colors.textPrimary, marginBottom: 12 },
-  instructionText: { fontSize: 15, color: colors.textMuted, lineHeight: 24 },
-  instructionStep: { fontSize: 15, color: colors.textMuted, lineHeight: 24, marginBottom: 8 },
+  sectionTitle: { fontSize: 18, fontWeight: "700", color: "#111827", marginBottom: 12 },
+  instructionText: { fontSize: 15, color: "#4b5563", lineHeight: 24 },
+  instructionStep: { fontSize: 15, color: "#4b5563", lineHeight: 24, marginBottom: 8 },
 });

@@ -163,18 +163,14 @@ describe("PlanPresenter save/update flow", () => {
     expect(planStore.savedPlans).toHaveLength(1);
   });
 
-  test("saving an existing plan updates it", () => {
+  test("editing a plan auto-updates it in savedPlans", () => {
     planStore.addSavedPlan({ ...samplePlan });
-    const updatedPlan = { ...samplePlan, name: "Updated Name" };
-    planStore.setCurrentPlan(updatedPlan);
+    planStore.setCurrentPlan({ ...samplePlan });
 
-    const exists = planStore.savedPlans.some((p) => p.id === updatedPlan.id);
-    expect(exists).toBe(true);
+    planStore.renamePlan("Updated Name");
 
-    // Existing plan → updateSavedPlan
-    planStore.updateSavedPlan(updatedPlan.id, updatedPlan);
     expect(planStore.savedPlans[0].name).toBe("Updated Name");
-    expect(planStore.savedPlans).toHaveLength(1); // no duplicate
+    expect(planStore.currentPlan.name).toBe("Updated Name");
   });
 
   test("delete flow removes plan and clears currentPlan", () => {

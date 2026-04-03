@@ -1,18 +1,10 @@
 import { Stack } from "expo-router";
 import { reaction } from "mobx";
 import { useEffect } from "react";
-import { ImageBackground, StyleSheet } from "react-native";
 import { userStore } from "../src/model/userStore";
 import { connectAuth } from "../src/persistence/authRepo";
 import { connectToPersistence } from "../src/persistence/planRepo";
 import { GlobalToast } from "../src/views/common/GlobalToast";
-
-const textureImage = require("../assets/images/Background.png");
-
-const styles = StyleSheet.create({
-  root: { flex: 1 },
-  texture: { opacity: 0.15 },
-});
 
 export default function RootLayout() {
   useEffect(function onMountACB() {
@@ -44,22 +36,17 @@ export default function RootLayout() {
   }, []);
 
   return (
-    // 全局几何纹理背景，imageStyle.opacity 控制深浅，不影响前景内容
-    <ImageBackground
-      source={textureImage}
-      style={styles.root}
-      imageStyle={styles.texture}
-      resizeMode="repeat"
-    >
+    <>
       <Stack>
         <Stack.Screen name="login" options={{ headerShown: false }} />
         <Stack.Screen name="register" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="plan" options={{ title: "Plan" }} />
         <Stack.Screen name="action/[id]" options={{ title: "Action Details", headerBackTitle: "Back" }} />
+        <Stack.Screen name="details" options={{ title: "Exercise Details", headerBackTitle: "Back" }} />
         <Stack.Screen name="planPreview" options={{ title: "Preview Plan", headerBackTitle: "Back" }} />
-        <Stack.Screen name="savedplans" options={{ title: "Saved Plans" }} />
       </Stack>
       <GlobalToast />
-    </ImageBackground>
+    </>
   );
 }

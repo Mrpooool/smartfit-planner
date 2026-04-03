@@ -1,11 +1,12 @@
-import { router } from "expo-router";
 import { observer } from "mobx-react-lite";
+import { useRouter } from "expo-router";
 import { planStore } from "../model/planStore";
 import { userStore } from "../model/userStore";
 import { logoutUser } from "../persistence/authRepo";
 import { ProfileView } from "../views/ProfileView";
 
 export default observer(function ProfilePresenter() {
+  const router = useRouter();
 
   const allCompletedDates = getAllCompletedDates(planStore.savedPlans);
 
@@ -28,23 +29,24 @@ export default observer(function ProfilePresenter() {
     }).length;
   }
 
-  function onOpenSavedPlansACB() {
-    router.push("/savedplans");
-  }
-
   function onLogoutACB() {
     logoutUser();
     // userStore.clearUser() is called automatically via onAuthStateChanged in authRepo
   }
 
+  function onNavigateToPlansACB() {
+    router.replace("/(tabs)/plan");
+  }
+
   return (
     <ProfileView
+      savedPlans={planStore.savedPlans}
       email={userStore.email}
       completedDates={allCompletedDates}
       totalWorkouts={allCompletedDates.length}
       thisWeekCount={getThisWeekCount()}
       savedPlansCount={planStore.savedPlans.length}
-      onOpenPlans={onOpenSavedPlansACB}
+      onNavigateToPlans={onNavigateToPlansACB}
       onLogout={onLogoutACB}
     />
   );

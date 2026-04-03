@@ -1,4 +1,5 @@
 import { Image } from "expo-image";
+import { Ionicons } from "@expo/vector-icons";
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { getExerciseImageSource } from "../api/exerciseDbApi";
 import { colors, radius, shadow } from "../theme";
@@ -8,7 +9,7 @@ import { colors, radius, shadow } from "../theme";
  *
  * Props:
  *  - plan: WorkoutPlan | null
- *  - onSavePlan()        → save to library
+ *  - onSavePlan()        → save generated plan to library (preview mode only)
  *  - onMarkCompleted()   → mark today as completed
  *  - onEditExercise(idx, field, value) → edit sets/reps
  *  - onRenamePlan(name)  → rename plan
@@ -22,11 +23,17 @@ export function PlanView({
   onPressExercise,
   onRenamePlan,
   onDeletePlan,
+  onBack,
   previewMode = false,
 }) {
   if (!plan) {
     return (
       <View style={styles.emptyContainer}>
+        {onBack ? (
+          <TouchableOpacity style={styles.backButton} onPress={onBack}>
+            <Text style={styles.backButtonText}>← My Plans</Text>
+          </TouchableOpacity>
+        ) : null}
         <Text style={styles.emptyIcon}>📋</Text>
         <Text style={styles.emptyText}>No plan selected.</Text>
         <Text style={styles.emptyHint}>Go generate or explore a plan first!</Text>
@@ -35,13 +42,23 @@ export function PlanView({
   }
 
   function renderExerciseCB(exercise, index) {
+    // Determine image source — prefer exerciseDbId (API proxy), fallback to gifUrl
+    let hasExerciseDbImage = Boolean(exercise.exerciseDbId);
+    let hasGifUrl = Boolean(exercise.gifUrl);
+
     return (
       <View key={exercise.id || index} style={styles.exerciseCard}>
         <TouchableOpacity activeOpacity={0.7} onPress={function onExercisePressCB() { onPressExercise(index); }}>
           {/* Exercise GIF */}
-          {exercise.exerciseDbId ? (
+          {hasExerciseDbImage ? (
             <Image
-              source={getExerciseImageSource(exercise.exerciseDbId,360)}
+              source={getExerciseImageSource(exercise.exerciseDbId, 360)}
+              style={styles.gif}
+              contentFit="contain"
+            />
+          ) : hasGifUrl ? (
+            <Image
+              source={{ uri: exercise.gifUrl }}
               style={styles.gif}
               contentFit="contain"
             />
@@ -86,6 +103,24 @@ export function PlanView({
           </View>
         </View>
 
+        {/* Instructions */}
+        {exercise.instructions && (Array.isArray(exercise.instructions) ? exercise.instructions.length > 0 : exercise.instructions.length > 0) ? (
+          <View style={styles.instructionsBox}>
+            <Text style={styles.instructionsTitle}>Instructions</Text>
+            {Array.isArray(exercise.instructions) ? (
+              exercise.instructions.map(function renderStepCB(step, i) {
+                return (
+                  <Text key={i} style={styles.instructions}>
+                    {i + 1}. {step}
+                  </Text>
+                );
+              })
+            ) : (
+              <Text style={styles.instructions}>{exercise.instructions}</Text>
+            )}
+          </View>
+        ) : null}
+
       </View>
     );
   }
@@ -95,6 +130,13 @@ export function PlanView({
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      {/* Back button */}
+      {onBack ? (
+        <TouchableOpacity style={styles.backButton} onPress={onBack}>
+          <Text style={styles.backButtonText}>← My Plans</Text>
+        </TouchableOpacity>
+      ) : null}
+
       {/* Plan Name — editable */}
       <Text style={styles.label}>Plan Name</Text>
       <TextInput
@@ -115,10 +157,6 @@ export function PlanView({
         </TouchableOpacity>
       ) : (
         <>
-          <TouchableOpacity style={styles.saveButton} onPress={onSavePlan}>
-            <Text style={styles.buttonText}>⭐  SAVE PLAN TO LIBRARY</Text>
-          </TouchableOpacity>
-
           <TouchableOpacity 
             style={isCompletedToday ? styles.completeButtonDisabled : styles.completeButton} 
             onPress={onMarkCompleted}
@@ -129,7 +167,8 @@ export function PlanView({
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.deleteButton} onPress={onDeletePlan}>
-            <Text style={styles.deleteButtonText}>🗑️  Delete Plan</Text>
+            <Ionicons name="remove-circle-outline" size={20} color={colors.error} style={{ marginRight: 6 }} />
+            <Text style={styles.deleteButtonText}>Delete Plan</Text>
           </TouchableOpacity>
         </>
       )}
@@ -140,71 +179,79 @@ export function PlanView({
 // ── Styles ──────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   // Container
-  container: { flex: 1, backgroundColor: colors.background },
+  container: { flex: 1, backgroundColor: "#f9fafb" },
   content: { padding: 20, paddingBottom: 40 },
+
+  // Back button
+  backButton: { marginBottom: 12 },
+  backButtonText: { fontSize: 16, fontWeight: "600", color: colors.primary },
 
   // Empty state
   emptyContainer: { flex: 1, justifyContent: "center", alignItems: "center", padding: 40 },
   emptyIcon: { fontSize: 48, marginBottom: 12 },
-  emptyText: { fontSize: 18, fontWeight: "600", color: colors.textDark },
-  emptyHint: { fontSize: 14, color: colors.textTertiary, marginTop: 6 },
+  emptyText: { fontSize: 18, fontWeight: "600", color: "#374151" },
+  emptyHint: { fontSize: 14, color: "#9ca3af", marginTop: 6 },
 
   // Plan name input
-  label: { fontSize: 13, fontWeight: "600", color: colors.textSecondary, marginBottom: 6 },
+  label: { fontSize: 13, fontWeight: "600", color: "#6b7280", marginBottom: 6 },
   planNameInput: {
-    fontSize: 20, fontWeight: "700", color: colors.textPrimary,
-    borderBottomWidth: 2, borderBottomColor: colors.primary,
+    fontSize: 20, fontWeight: "700", color: "#111827",
+    borderBottomWidth: 2, borderBottomColor: "#6366f1",
     paddingVertical: 8, marginBottom: 24,
   },
 
   // Exercise card
   exerciseCard: {
-    backgroundColor: colors.card, borderRadius: 14,
+    backgroundColor: "#ffffff", borderRadius: 14,
     padding: 16, marginBottom: 16,
-    ...shadow.md,
+    shadowColor: "#000", shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05, shadowRadius: 4, elevation: 2,
   },
   gif: { width: "100%", height: 200, borderRadius: 10, marginBottom: 12 },
   gifPlaceholder: {
     width: "100%", height: 120, borderRadius: 10,
-    backgroundColor: colors.surface, justifyContent: "center", alignItems: "center",
+    backgroundColor: "#f3f4f6", justifyContent: "center", alignItems: "center",
     marginBottom: 12,
   },
   gifPlaceholderText: { fontSize: 36 },
-  exerciseName: { fontSize: 17, fontWeight: "700", color: colors.textPrimary },
-  targetMuscle: { fontSize: 13, color: colors.primary, marginTop: 2, marginBottom: 10 },
+  exerciseName: { fontSize: 17, fontWeight: "700", color: "#111827" },
+  targetMuscle: { fontSize: 13, color: "#6366f1", marginTop: 2, marginBottom: 10 },
 
   // Sets & Reps
   setsRepsRow: { flexDirection: "row", gap: 16, marginBottom: 10 },
   fieldGroup: { flex: 1 },
-  fieldLabel: { fontSize: 12, fontWeight: "600", color: colors.textSecondary, marginBottom: 4 },
+  fieldLabel: { fontSize: 12, fontWeight: "600", color: "#6b7280", marginBottom: 4 },
   numberInput: {
-    backgroundColor: colors.surface, borderRadius: radius.sm,
+    backgroundColor: "#f3f4f6", borderRadius: 8,
     paddingHorizontal: 12, paddingVertical: 10,
-    fontSize: 16, fontWeight: "600", color: colors.textPrimary,
+    fontSize: 16, fontWeight: "600", color: "#111827",
     textAlign: "center",
   },
 
   // Instructions
+  instructionsBox: { marginTop: 8, paddingTop: 8, borderTopWidth: 1, borderTopColor: colors.border },
+  instructionsTitle: { fontSize: 13, fontWeight: "600", color: colors.textSecondary, marginBottom: 4 },
   instructions: { fontSize: 13, color: colors.textMuted, lineHeight: 18, marginTop: 4 },
 
   // Buttons
   saveButton: {
-    backgroundColor: colors.primary, padding: 16, borderRadius: radius.md,
+    backgroundColor: "#6366f1", padding: 16, borderRadius: 12,
     alignItems: "center", marginTop: 20,
   },
   completeButton: {
-    backgroundColor: colors.success, padding: 16, borderRadius: radius.md,
+    backgroundColor: "#10b981", padding: 16, borderRadius: 12,
     alignItems: "center", marginTop: 12,
   },
   completeButtonDisabled: {
-    backgroundColor: colors.disabled, padding: 16, borderRadius: radius.md,
+    backgroundColor: "#d1d5db", padding: 16, borderRadius: 12,
     alignItems: "center", marginTop: 12,
   },
-  buttonTextDisabled: { color: colors.textSecondary, fontWeight: "bold", fontSize: 15 },
+  buttonTextDisabled: { color: "#6b7280", fontWeight: "bold", fontSize: 15 },
   deleteButton: {
+    flexDirection: "row", justifyContent: "center",
     backgroundColor: "transparent", padding: 16, borderRadius: radius.md,
     alignItems: "center", marginTop: 12, borderWidth: 1, borderColor: colors.error,
   },
-  buttonText: { color: colors.card, fontWeight: "bold", fontSize: 15 },
-  deleteButtonText: { color: colors.error, fontWeight: "bold", fontSize: 15 },
+  buttonText: { color: "#fff", fontWeight: "bold", fontSize: 15 },
+  deleteButtonText: { color: "#ef4444", fontWeight: "bold", fontSize: 15 },
 });

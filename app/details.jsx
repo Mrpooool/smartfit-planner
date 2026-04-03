@@ -1,2 +1,2 @@
-// Route entry only — no business logic here.
-export { default } from "../src/presenters/ActionDetailsPresenter";
+// Route entry — fetches exercise by ID from ExerciseDB API (used by Explore).
+export { default } from "../src/presenters/ExploreDetailPresenter";
