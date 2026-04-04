@@ -1,6 +1,8 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { getAuth, getReactNativePersistence, initializeAuth, } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { Platform } from "react-native";
 
 // Values are read from .env (EXPO_PUBLIC_ prefix is required by Expo).
 // See .env.example for the template.
@@ -16,5 +18,10 @@ const config = {
 
 // Initialise Firebase once; export shared instances for authRepo & planRepo
 export const firebaseApp = initializeApp(config);
-export const auth = getAuth(firebaseApp);
+export const auth =
+  Platform.OS === "web"
+    ? getAuth(firebaseApp)
+    : initializeAuth(firebaseApp, {
+        persistence: getReactNativePersistence(AsyncStorage),
+      });
 export const db = getFirestore(firebaseApp);
