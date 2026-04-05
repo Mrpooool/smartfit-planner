@@ -18,6 +18,7 @@ export default observer(function ExplorerPresenter() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState(DEFAULT_FILTER);
+  const [showAnimatedListImages, setShowAnimatedListImages] = useState(false);
 
   // Modal state
   const [modalVisible, setModalVisible] = useState(false);
@@ -40,6 +41,10 @@ export default observer(function ExplorerPresenter() {
   function onFilterChangeACB(muscle) {
     setActiveFilter(muscle);
     fetchExercisesByFilter(muscle);
+  }
+
+  function onImageModeChangeACB(useAnimatedImages) {
+    setShowAnimatedListImages(useAnimatedImages);
   }
 
   // ── Add button → open modal ──
@@ -157,6 +162,7 @@ export default observer(function ExplorerPresenter() {
         exercise={exercise}
         onAdd={onAddExerciseACB}
         onPress={handleExercisePress}
+        allowAnimatedImageFallback={showAnimatedListImages}
       />
     );
   }
@@ -199,8 +205,10 @@ export default observer(function ExplorerPresenter() {
       searchQuery={searchQuery}
       filters={FILTERS}
       activeFilter={activeFilter}
+      showAnimatedListImages={showAnimatedListImages}
       onSearch={onSearchACB}
       onFilterChange={onFilterChangeACB}
+      onImageModeChange={onImageModeChangeACB}
       resultsContent={renderResultsContent()}
       modalVisible={modalVisible}
       selectedExercise={selectedExercise}

@@ -2,7 +2,13 @@ import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { colors, radius, shadow } from "../theme";
 import { ExerciseImage } from "./common/ExerciseImage";
 
-export function ExerciseCardView({ exercise, isAdded, onAdd, onPress }) {
+export function ExerciseCardView({
+  exercise,
+  isAdded,
+  onAdd,
+  onPress,
+  allowAnimatedImageFallback = false,
+}) {
   function handleAddPress() {
     if (onAdd) {
       onAdd(exercise);
@@ -17,12 +23,12 @@ export function ExerciseCardView({ exercise, isAdded, onAdd, onPress }) {
 
   function renderImageSection() {
     return (
-      // 卡片缩略图也走统一组件，确保列表页和详情页的缺图回退行为一致。
       <ExerciseImage
         exercise={exercise}
         style={styles.image}
         contentFit="cover"
         variant="compact"
+        allowImageEndpointFallback={allowAnimatedImageFallback}
       />
     );
   }

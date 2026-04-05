@@ -12,8 +12,10 @@ export function ExplorerView({
   searchQuery,
   filters,
   activeFilter,
+  showAnimatedListImages,
   onSearch,
   onFilterChange,
+  onImageModeChange,
   resultsContent,
   // Modal props
   modalVisible,
@@ -43,6 +45,30 @@ export function ExplorerView({
     );
   }
 
+  function renderImageModeButton(useAnimatedImages, label, hint) {
+    const selected = Boolean(showAnimatedListImages) === useAnimatedImages;
+
+    function handlePress() {
+      if (onImageModeChange) {
+        onImageModeChange(useAnimatedImages);
+      }
+    }
+
+    return (
+      <TouchableOpacity
+        style={[styles.imageModeButton, selected && styles.imageModeButtonActive]}
+        onPress={handlePress}
+      >
+        <Text style={[styles.imageModeLabel, selected && styles.imageModeLabelActive]}>
+          {label}
+        </Text>
+        <Text style={[styles.imageModeHint, selected && styles.imageModeHintActive]}>
+          {hint}
+        </Text>
+      </TouchableOpacity>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Explore Exercises</Text>
@@ -56,6 +82,20 @@ export function ExplorerView({
 
       <Text style={styles.sectionTitle}>Filters</Text>
       <View style={styles.filterRow}>{filters.map(renderFilterChip)}</View>
+
+      <Text style={styles.sectionTitle}>List Display</Text>
+      <View style={styles.imageModeRow}>
+        {renderImageModeButton(
+          false,
+          "Data Saver",
+          "Use lightweight previews to save mobile data and run more smoothly on lower-end phones"
+        )}
+        {renderImageModeButton(
+          true,
+          "Motion Preview",
+          "Show animated thumbnails for the richest browsing experience when network conditions are good"
+        )}
+      </View>
 
       <View style={styles.resultsContainer}>{resultsContent}</View>
 
@@ -124,6 +164,41 @@ const styles = StyleSheet.create({
   },
   filterChipText: {
     fontSize: 14,
+  },
+  imageModeRow: {
+    flexDirection: "row",
+    gap: 10,
+    marginBottom: 16,
+  },
+  imageModeButton: {
+    flex: 1,
+    backgroundColor: colors.surface,
+    borderRadius: radius.md,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...shadow.sm,
+  },
+  imageModeButtonActive: {
+    borderColor: colors.primary,
+    backgroundColor: colors.primaryLight,
+  },
+  imageModeLabel: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: colors.textPrimary,
+    marginBottom: 4,
+  },
+  imageModeLabelActive: {
+    color: colors.primaryDark,
+  },
+  imageModeHint: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    lineHeight: 16,
+  },
+  imageModeHintActive: {
+    color: colors.primaryDark,
   },
   resultsContainer: {
     flex: 1,

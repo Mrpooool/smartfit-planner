@@ -6,10 +6,18 @@ import { StyleSheet, Text, View } from "react-native";
 import { getExerciseImageSource } from "../../api/exerciseDbApi";
 import { colors, radius } from "../../theme";
 
-export function ExerciseImage({ exercise, style, contentFit = "contain", variant = "large" }) {
+export function ExerciseImage({
+  exercise,
+  style,
+  contentFit = "contain",
+  variant = "large",
+  allowImageEndpointFallback,
+}) {
   const [sourceIndex, setSourceIndex] = useState(0);
   // 按优先级准备图片源列表：先用搜索结果自带的 gifUrl，再退回到 ExerciseDB 图片接口。
-  const imageSources = buildImageSources(exercise);
+  const shouldAllowImageEndpointFallback =
+    allowImageEndpointFallback ?? variant !== "compact";
+  const imageSources = buildImageSources(exercise, shouldAllowImageEndpointFallback);
   // sourceIndex 指向当前正在尝试的图源；加载失败时会递增，形成回退链路。
   const source = imageSources[sourceIndex];
   const isCompact = variant === "compact";
@@ -23,6 +31,28 @@ export function ExerciseImage({ exercise, style, contentFit = "contain", variant
     setSourceIndex(0);
   }, [exercise?.exerciseDbId, exercise?.gifUrl, exercise?.id]);
 
+  useEffect(function logFallbackReasonACB() {
+    if (!__DEV__) {
+      return;
+    }
+
+    if (!exercise?.gifUrl && (exercise?.exerciseDbId || exercise?.id)) {
+      console.log("[ExerciseImage] Missing gifUrl", {
+        id: exercise?.exerciseDbId || exercise?.id,
+        name: exercise?.name || "",
+        variant: variant,
+        imageEndpointFallbackEnabled: shouldAllowImageEndpointFallback,
+      });
+    }
+  }, [
+    exercise?.exerciseDbId,
+    exercise?.gifUrl,
+    exercise?.id,
+    exercise?.name,
+    shouldAllowImageEndpointFallback,
+    variant,
+  ]);
+
   if (source) {
     return (
       <Image
@@ -32,6 +62,16 @@ export function ExerciseImage({ exercise, style, contentFit = "contain", variant
         cachePolicy="memory-disk"
         transition={120}
         onError={function onImageErrorACB() {
+          if (__DEV__) {
+            console.log("[ExerciseImage] Image source failed, trying next fallback", {
+              id: exercise?.exerciseDbId || exercise?.id,
+              name: exercise?.name || "",
+              sourceUri: source?.uri || "",
+              nextSourceUri: imageSources[sourceIndex + 1]?.uri || "",
+              variant: variant,
+            });
+          }
+
           // 当前图源失败时切到下一个；如果越界了，source 会变成 undefined，
           // 组件就会走下面的占位渲染分支。
           setSourceIndex(function nextSourceIndexCB(currentIndex) {
@@ -82,7 +122,7 @@ export function ExerciseImage({ exercise, style, contentFit = "contain", variant
   );
 }
 
-function buildImageSources(exercise) {
+function buildImageSources(exercise, allowImageEndpointFallback) {
   const sources = [];
   const seenUris = new Set();
   const imageId = exercise?.exerciseDbId || exercise?.id;
@@ -92,7 +132,7 @@ function buildImageSources(exercise) {
     sources.push({ uri: exercise.gifUrl });
   }
 
-  if (imageId) {
+  if (allowImageEndpointFallback && imageId) {
     sources.push(getExerciseImageSource(imageId, 360));
   }
 
