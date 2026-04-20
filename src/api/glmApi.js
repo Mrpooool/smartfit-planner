@@ -14,7 +14,7 @@ const SEARCH_NAME_ALIASES = {
   "walking lunges": "lunge",
 };
 
-export async function generateWorkoutPlan(duration, equipment, targetMuscle, avoidExerciseNames) {
+export async function generateWorkoutPlan(duration, equipment, targetMuscle, experienceLevel, avoidExerciseNames) {
   if (!GLM_API_KEY) {
     throw new Error("Missing EXPO_PUBLIC_GLM_API_KEY.");
   }
@@ -24,6 +24,7 @@ export async function generateWorkoutPlan(duration, equipment, targetMuscle, avo
       ? equipment.join(", ")
       : "bodyweight";
   const exerciseCountGuidance = getExerciseCountGuidance(duration);
+  const experienceGuidance = getExperienceGuidance(experienceLevel);
   const avoidExerciseText =
     Array.isArray(avoidExerciseNames) && avoidExerciseNames.length > 0
       ? `If possible, avoid reusing these exercises: ${avoidExerciseNames.slice(0, 8).join(", ")}. `
@@ -63,6 +64,7 @@ export async function generateWorkoutPlan(duration, equipment, targetMuscle, avo
       role: "user",
       content:
         `Create a ${duration}-minute workout plan using ${equipmentText} equipment, targeting ${targetMuscle}. ` +
+        `${experienceGuidance}. ` +
         avoidExerciseText +
         `${exerciseCountGuidance}. ` +
         "Choose realistic exercises for the time available. " +
@@ -111,6 +113,18 @@ function getExerciseCountGuidance(duration) {
   }
 
   return "Return exactly 6 exercises";
+}
+
+function getExperienceGuidance(level) {
+  if (level === "advanced") {
+    return "Make it suitable for an advanced trainee with harder exercise choices and slightly higher training demand";
+  }
+
+  if (level === "intermediate") {
+    return "Make it suitable for an intermediate trainee with moderate challenge and standard training volume";
+  }
+
+  return "Make it suitable for a beginner with simple exercise choices, clear fundamentals, and manageable volume";
 }
 
 function parseModelJsonContent(content) {

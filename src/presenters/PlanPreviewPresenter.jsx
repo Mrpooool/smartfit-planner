@@ -89,6 +89,7 @@ export default observer(function PlanPreviewPresenter() {
 
 function getGenerationParams(searchParams) {
   var duration = Number(readParamValue(searchParams.duration)) || 30;
+  var experienceLevel = readParamValue(searchParams.experienceLevel) || "beginner";
   var targetMuscle = readParamValue(searchParams.targetMuscle) || "full body";
   var equipment = [];
   var equipmentParam = readParamValue(searchParams.equipment);
@@ -103,6 +104,7 @@ function getGenerationParams(searchParams) {
 
   return {
     duration,
+    experienceLevel,
     targetMuscle,
     equipment: Array.isArray(equipment) ? equipment : [],
   };

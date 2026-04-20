@@ -12,6 +12,7 @@ export default observer(function GeneratorPresenter() {
   const formParams = useLocalObservable(() => ({
     duration: 30,
     equipment: [],
+    experienceLevel: "beginner",
     targetMuscle: "full body",
   }));
   //存API调用状态的promise，数据和错误
@@ -41,6 +42,7 @@ export default observer(function GeneratorPresenter() {
     const fullPlan = await generateAiPlan({
       duration: formParams.duration,
       equipment: formParams.equipment,
+      experienceLevel: formParams.experienceLevel,
       targetMuscle: formParams.targetMuscle,
       onWarning: function onWarningACB(message) {
         action(function setWarningACB() {
@@ -54,6 +56,7 @@ export default observer(function GeneratorPresenter() {
       pathname: "/planPreview",
       params: {
         duration: String(formParams.duration),
+        experienceLevel: formParams.experienceLevel,
         targetMuscle: formParams.targetMuscle,
         equipment: JSON.stringify(formParams.equipment),
       },
@@ -77,6 +80,7 @@ export default observer(function GeneratorPresenter() {
     <GeneratorView
       duration={formParams.duration}          // ← Presenter 读了，observer 追踪到
       equipment={formParams.equipment}
+      experienceLevel={formParams.experienceLevel}
       targetMuscle={formParams.targetMuscle}
       email={userStore.email}
       promise={planPromiseState.promise}

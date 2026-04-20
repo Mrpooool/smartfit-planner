@@ -76,6 +76,20 @@ export function GeneratorView(props) {
         </View>
       </View>
 
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Experience Level</Text>
+        <View style={styles.pickerWrapper}>
+          <Picker
+            selectedValue={props.experienceLevel}
+            onValueChange={chooseExperienceLevelACB}
+          >
+            <Picker.Item label="Beginner" value="beginner" />
+            <Picker.Item label="Intermediate" value="intermediate" />
+            <Picker.Item label="Advanced" value="advanced" />
+          </Picker>
+        </View>
+      </View>
+
       {
         props.warningMessage ?
           <Text style={styles.warningText}>{props.warningMessage}</Text> : null
@@ -131,6 +145,10 @@ export function GeneratorView(props) {
 
   function chooseTargetMuscleACB(muscle) {
     props.onParamChange("targetMuscle", muscle);
+  }
+
+  function chooseExperienceLevelACB(level) {
+    props.onParamChange("experienceLevel", level);
   }
 }
 

@@ -20,11 +20,12 @@ const SEARCH_QUERY_ALIASES = {
 export async function generateAiPlan(params) {
   var duration = params?.duration;
   var equipment = Array.isArray(params?.equipment) ? params.equipment : [];
+  var experienceLevel = params?.experienceLevel;
   var targetMuscle = params?.targetMuscle;
   var avoidExerciseNames = Array.isArray(params?.avoidExerciseNames) ? params.avoidExerciseNames : [];
   var onWarning = params?.onWarning;
 
-  const plan = await generateWorkoutPlan(duration, equipment, targetMuscle, avoidExerciseNames);
+  const plan = await generateWorkoutPlan(duration, equipment, targetMuscle, experienceLevel, avoidExerciseNames);
   const enrichedExercises = await Promise.all(
     plan.exercises.map(function enrichExerciseCB(exercise) {
       return enrichExercise(exercise, {
