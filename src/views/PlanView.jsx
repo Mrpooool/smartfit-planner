@@ -13,6 +13,7 @@ import { ExerciseImage } from "./common/ExerciseImage";
  *  - onEditExercise(idx, field, value) → edit sets/reps
  *  - onRenamePlan(name)  → rename plan
  *  - onDeletePlan()      → delete plan
+ *  - onRegenerate()      → regenerate AI preview plan
  */
 export function PlanView({
   plan,
@@ -22,6 +23,8 @@ export function PlanView({
   onPressExercise,
   onRenamePlan,
   onDeletePlan,
+  onRegenerate,
+  isRegenerating = false,
   onAddExercise,
   onBack,
   previewMode = false,
@@ -124,9 +127,27 @@ export function PlanView({
       {(plan.exercises || []).map(renderExerciseCB)}
 
       {previewMode ? (
-        <TouchableOpacity style={styles.saveButton} onPress={onSavePlan}>
-          <Text style={styles.buttonText}>➕  ADD TO MY PLAN</Text>
-        </TouchableOpacity>
+        <>
+          {onRegenerate ? (
+            <TouchableOpacity
+              style={isRegenerating ? styles.regenerateButtonDisabled : styles.regenerateButton}
+              onPress={onRegenerate}
+              disabled={isRegenerating}
+            >
+              <Text style={isRegenerating ? styles.regenerateTextDisabled : styles.regenerateText}>
+                {isRegenerating ? "Regenerating..." : "↻  REGENERATE PLAN"}
+              </Text>
+            </TouchableOpacity>
+          ) : null}
+
+          <TouchableOpacity
+            style={isRegenerating ? styles.saveButtonDisabled : styles.saveButton}
+            onPress={onSavePlan}
+            disabled={isRegenerating}
+          >
+            <Text style={isRegenerating ? styles.saveButtonTextDisabled : styles.buttonText}>➕  ADD TO MY PLAN</Text>
+          </TouchableOpacity>
+        </>
       ) : (
         <>
           {onAddExercise ? (
@@ -192,7 +213,28 @@ const styles = StyleSheet.create({
   instructions: { fontSize: 13, color: colors.textMuted, lineHeight: 18, marginTop: 4 },
   saveButton: {
     backgroundColor: "#6366f1", padding: 16, borderRadius: 12,
-    alignItems: "center", marginTop: 20,
+    alignItems: "center", marginTop: 12,
+  },
+  saveButtonDisabled: {
+    backgroundColor: "#c7d2fe", padding: 16, borderRadius: 12,
+    alignItems: "center", marginTop: 12,
+  },
+  saveButtonTextDisabled: {
+    color: "#eef2ff", fontWeight: "bold", fontSize: 15,
+  },
+  regenerateButton: {
+    backgroundColor: "#ffffff", padding: 16, borderRadius: 12,
+    alignItems: "center", marginTop: 12, borderWidth: 1, borderColor: "#6366f1",
+  },
+  regenerateButtonDisabled: {
+    backgroundColor: "#f3f4f6", padding: 16, borderRadius: 12,
+    alignItems: "center", marginTop: 12, borderWidth: 1, borderColor: "#d1d5db",
+  },
+  regenerateText: {
+    color: "#6366f1", fontWeight: "bold", fontSize: 15,
+  },
+  regenerateTextDisabled: {
+    color: "#9ca3af", fontWeight: "bold", fontSize: 15,
   },
   addExerciseButton: {
     backgroundColor: "#6366f1", padding: 16, borderRadius: 12,

@@ -1,13 +1,17 @@
 import { observer } from "mobx-react-lite";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { action } from "mobx";
+import { useState } from "react";
 import { planStore } from "../model/planStore";
 import { uiStore } from "../model/uiStore";
+import { generateAiPlan } from "../utils/generateAiPlan";
 import { PlanView } from "../views/PlanView";
 
 export default observer(function PlanPreviewPresenter() {
   const router = useRouter();
+  const searchParams = useLocalSearchParams();
   const plan = planStore.generatedPlan;
+  const [isRegenerating, setIsRegenerating] = useState(false);
 
   function onAddToPlanACB() {
     if (!plan) return;
@@ -31,6 +35,26 @@ export default observer(function PlanPreviewPresenter() {
     router.push("/action/" + index + "?source=generated");
   }
 
+  async function onRegenerateACB() {
+    if (isRegenerating) return;
+
+    try {
+      setIsRegenerating(true);
+      const generationParams = getGenerationParams(searchParams);
+      const nextPlan = await generateAiPlan({
+        ...generationParams,
+        avoidExerciseNames: (planStore.generatedPlan?.exercises || []).map(function getExerciseNameCB(exercise) {
+          return exercise.searchName || exercise.name;
+        }),
+      });
+      planStore.setGeneratedPlan(nextPlan);
+    } catch (err) {
+      uiStore.showToast("⚠️ Failed to regenerate plan: " + (err.message || "Unknown error"), "error");
+    } finally {
+      setIsRegenerating(false);
+    }
+  }
+
   // ── Editable handlers for previewed plan ──
 
   var onEditExerciseACB = action(function onEditExerciseACB(exerciseIndex, field, value) {
@@ -52,6 +76,8 @@ export default observer(function PlanPreviewPresenter() {
       plan={plan}
       previewMode={true}
       onSavePlan={onAddToPlanACB}
+      onRegenerate={onRegenerateACB}
+      isRegenerating={isRegenerating}
       onPressExercise={onPressExerciseACB}
       onMarkCompleted={function () {}}
       onEditExercise={onEditExerciseACB}
@@ -60,3 +86,28 @@ export default observer(function PlanPreviewPresenter() {
     />
   );
 });
+
+function getGenerationParams(searchParams) {
+  var duration = Number(readParamValue(searchParams.duration)) || 30;
+  var targetMuscle = readParamValue(searchParams.targetMuscle) || "full body";
+  var equipment = [];
+  var equipmentParam = readParamValue(searchParams.equipment);
+
+  if (equipmentParam) {
+    try {
+      equipment = JSON.parse(equipmentParam);
+    } catch {
+      equipment = [];
+    }
+  }
+
+  return {
+    duration,
+    targetMuscle,
+    equipment: Array.isArray(equipment) ? equipment : [],
+  };
+}
+
+function readParamValue(value) {
+  return Array.isArray(value) ? value[0] : value;
+}

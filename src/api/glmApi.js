@@ -14,7 +14,7 @@ const SEARCH_NAME_ALIASES = {
   "walking lunges": "lunge",
 };
 
-export async function generateWorkoutPlan(duration, equipment, targetMuscle) {
+export async function generateWorkoutPlan(duration, equipment, targetMuscle, avoidExerciseNames) {
   if (!GLM_API_KEY) {
     throw new Error("Missing EXPO_PUBLIC_GLM_API_KEY.");
   }
@@ -24,6 +24,10 @@ export async function generateWorkoutPlan(duration, equipment, targetMuscle) {
       ? equipment.join(", ")
       : "bodyweight";
   const exerciseCountGuidance = getExerciseCountGuidance(duration);
+  const avoidExerciseText =
+    Array.isArray(avoidExerciseNames) && avoidExerciseNames.length > 0
+      ? `If possible, avoid reusing these exercises: ${avoidExerciseNames.slice(0, 8).join(", ")}. `
+      : "";
 
   const messages = [
     {
@@ -59,6 +63,7 @@ export async function generateWorkoutPlan(duration, equipment, targetMuscle) {
       role: "user",
       content:
         `Create a ${duration}-minute workout plan using ${equipmentText} equipment, targeting ${targetMuscle}. ` +
+        avoidExerciseText +
         `${exerciseCountGuidance}. ` +
         "Choose realistic exercises for the time available. " +
         "Keep the plan concise; do not pad it with extra exercises just to increase variety. " +
