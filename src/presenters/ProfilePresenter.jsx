@@ -8,15 +8,11 @@ import { ProfileView } from "../views/ProfileView";
 export default observer(function ProfilePresenter() {
   const router = useRouter();
 
-  const allCompletedDates = getAllCompletedDates(planStore.savedPlans);
+  // Use completionHistory (independent of plan lifecycle) for stats
+  const allCompletedDates = getUniqueCompletedDates(planStore.completionHistory);
 
-  function getAllCompletedDates(plans) {
-    const allDates = plans.flatMap(getCompletedDatesFromPlanCB);
-    return [...new Set(allDates)].sort();
-  }
-
-  function getCompletedDatesFromPlanCB(plan) {
-    return plan.completedDates || [];
+  function getUniqueCompletedDates(history) {
+    return [...new Set(history || [])].sort();
   }
 
   function getThisWeekCount() {//计算最近7天内完成的锻炼次数

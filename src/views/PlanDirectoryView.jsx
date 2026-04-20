@@ -23,6 +23,7 @@ import { colors, radius, shadow } from "../theme";
 export function PlanDirectoryView({
   savedPlans,
   getThisWeekCount,
+  isCompletedToday,
   onStartPlan,
   onDeletePlan,
   onCreateNewPlan,
@@ -51,15 +52,23 @@ export function PlanDirectoryView({
     var plan = info.item;
     var weekCount = getThisWeekCount(plan);
     var exerciseCount = (plan.exercises || []).length;
+    var completedToday = isCompletedToday ? isCompletedToday(plan) : false;
 
     return (
       <TouchableOpacity
-        style={styles.card}
+        style={[styles.card, completedToday && styles.cardCompleted]}
         onPress={function () { onStartPlan(plan); }}
         activeOpacity={0.7}
       >
         <View style={styles.cardContent}>
-          <Text style={styles.planName}>{plan.name || "Untitled Plan"}</Text>
+          <View style={styles.nameRow}>
+            <Text style={styles.planName}>{plan.name || "Untitled Plan"}</Text>
+            {completedToday ? (
+              <View style={styles.completedBadge}>
+                <Text style={styles.completedBadgeText}>Completed ✅</Text>
+              </View>
+            ) : null}
+          </View>
           <Text style={styles.planMeta}>
             {exerciseCount} exercises  ·  {weekCount} this week
           </Text>
@@ -217,6 +226,27 @@ const styles = StyleSheet.create({
   },
   deleteText: {
     fontSize: 18,
+  },
+  nameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 4,
+  },
+  cardCompleted: {
+    borderWidth: 1.5,
+    borderColor: "#10b981",
+  },
+  completedBadge: {
+    backgroundColor: "#d1fae5",
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  completedBadgeText: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#059669",
   },
   emptyBox: {
     flex: 1,

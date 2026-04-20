@@ -66,6 +66,10 @@ export default observer(function PlanPresenter() {
     setViewMode("directory");
   }
 
+  function onAddExerciseACB() {
+    router.replace("/(tabs)/explore");
+  }
+
   function getLocalDateString() {
     var now = new Date();
     var year = now.getFullYear();
@@ -92,6 +96,9 @@ export default observer(function PlanPresenter() {
     }
     planStore.markCompleted(plan.id, today);
     uiStore.showToast("💪 Workout logged for today!", "success");
+
+    // Return to plan directory so users don't have to scroll up
+    setViewMode("directory");
   }
 
   function onEditExerciseACB(exerciseIndex, field, value) {
@@ -147,15 +154,22 @@ export default observer(function PlanPresenter() {
         onPressExercise={onPressExerciseACB}
         onRenamePlan={onRenamePlanACB}
         onDeletePlan={onDeletePlanACB}
+        onAddExercise={onAddExerciseACB}
         onBack={onBackToDirectoryACB}
       />
     );
+  }
+
+  function isCompletedTodayACB(plan) {
+    var today = getLocalDateString();
+    return (plan.completedDates || []).includes(today);
   }
 
   return (
     <PlanDirectoryView
       savedPlans={planStore.savedPlans}
       getThisWeekCount={getThisWeekCount}
+      isCompletedToday={isCompletedTodayACB}
       onStartPlan={onStartPlanACB}
       onDeletePlan={onDeletePlanFromDirectoryACB}
       onCreateNewPlan={onCreateNewPlanACB}

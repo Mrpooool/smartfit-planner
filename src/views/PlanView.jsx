@@ -22,6 +22,7 @@ export function PlanView({
   onPressExercise,
   onRenamePlan,
   onDeletePlan,
+  onAddExercise,
   onBack,
   previewMode = false,
 }) {
@@ -128,6 +129,12 @@ export function PlanView({
         </TouchableOpacity>
       ) : (
         <>
+          {onAddExercise ? (
+            <TouchableOpacity style={styles.addExerciseButton} onPress={onAddExercise}>
+              <Text style={styles.addExerciseText}>＋  Add Exercise from Explore</Text>
+            </TouchableOpacity>
+          ) : null}
+
           <TouchableOpacity
             style={isCompletedToday ? styles.completeButtonDisabled : styles.completeButton}
             onPress={onMarkCompleted}
@@ -186,6 +193,13 @@ const styles = StyleSheet.create({
   saveButton: {
     backgroundColor: "#6366f1", padding: 16, borderRadius: 12,
     alignItems: "center", marginTop: 20,
+  },
+  addExerciseButton: {
+    backgroundColor: "#6366f1", padding: 16, borderRadius: 12,
+    alignItems: "center", marginTop: 12,
+  },
+  addExerciseText: {
+    color: "#fff", fontWeight: "bold", fontSize: 15,
   },
   completeButton: {
     backgroundColor: "#10b981", padding: 16, borderRadius: 12,

@@ -10,6 +10,9 @@ const model = {
   /** @type {import('../types/workout').WorkoutPlan[]} */
   savedPlans: [],
 
+  /** @type {string[]} All completion date strings, independent of plan lifecycle */
+  completionHistory: [],
+
   ready: false, // true once Firestore data is loaded
 
   setCurrentPlan: action(function setCurrentPlan(plan) {
@@ -52,6 +55,13 @@ const model = {
         completedDates: [...(this.currentPlan.completedDates || []), date]
       };
     }
+
+    // 3. Append to completionHistory (independent of plan lifecycle)
+    this.completionHistory = [...this.completionHistory, date];
+  }),
+
+  setCompletionHistory: action(function setCompletionHistory(history) {
+    this.completionHistory = Array.isArray(history) ? history : [];
   }),
 
   // Update a single field (e.g. "sets", "reps") on one exercise inside currentPlan

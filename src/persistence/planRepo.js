@@ -30,6 +30,7 @@ export function connectToPersistence(uid, watchFunction) {
     const exists = typeof docSnap.exists === "function" ? docSnap.exists() : !!docSnap.exists;
     const data = exists ? (docSnap.data() || {}) : {};
     const remotePlans = Array.isArray(data.savedPlans) ? data.savedPlans : [];
+    const remoteHistory = Array.isArray(data.completionHistory) ? data.completionHistory : [];
 
     // If we're currently saving, DON'T overwrite local state with stale server data
     if (isSaving) {
@@ -39,6 +40,7 @@ export function connectToPersistence(uid, watchFunction) {
 
     skipNextReaction = true;
     planStore.savedPlans = remotePlans;
+    planStore.completionHistory = remoteHistory;
     planStore.ready = true;
     // Defer reset so the MobX reaction (which fires after action completes) sees the flag
     setTimeout(function () { skipNextReaction = false; }, 0);
@@ -74,7 +76,10 @@ export function connectToPersistence(uid, watchFunction) {
   };
 
   function model2PersistACB() {
-    return JSON.stringify(planStore.savedPlans);
+    return JSON.stringify({
+      savedPlans: planStore.savedPlans,
+      completionHistory: planStore.completionHistory,
+    });
   }
 
   async function save2FirestoreACB() {
@@ -89,8 +94,9 @@ export function connectToPersistence(uid, watchFunction) {
     try {
       isSaving = true;
       const safePlans = JSON.parse(JSON.stringify(planStore.savedPlans));
-      console.log("[planRepo] Saving", safePlans.length, "plans to Firestore…");
-      await setDoc(docRef, { savedPlans: safePlans });
+      const safeHistory = JSON.parse(JSON.stringify(planStore.completionHistory));
+      console.log("[planRepo] Saving", safePlans.length, "plans +", safeHistory.length, "history entries to Firestore…");
+      await setDoc(docRef, { savedPlans: safePlans, completionHistory: safeHistory });
       console.log("[planRepo] ✓ Saved successfully");
     } catch (err) {
       console.error("[planRepo] Firestore save FAILED:", err);
