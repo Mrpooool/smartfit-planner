@@ -3,6 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { observer } from "mobx-react-lite";
 import { View, Text } from "react-native";
 import { userStore } from "../../src/model/userStore";
+import { colors } from "../../src/theme";
 
 export default observer(function TabsLayout() {
   if (!userStore.ready) {
@@ -20,8 +21,8 @@ export default observer(function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: "#6366f1",
-        tabBarInactiveTintColor: "#9ca3af",
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textTertiary,
       }}
     >
       <Tabs.Screen

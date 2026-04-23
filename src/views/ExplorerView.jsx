@@ -26,7 +26,7 @@ export function ExplorerView({
   onCloseModal,
 }) {
   function renderFilterChip(filterName) {
-    var selected = filterName === activeFilter;
+    const selected = filterName === activeFilter;
 
     function handleFilterPress() {
       if (onFilterChange) {
@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: "#fff",
+    backgroundColor: colors.background,
   },
   title: {
     fontSize: 22,
@@ -137,7 +137,9 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: colors.border,
+    backgroundColor: colors.card,
+    borderRadius: radius.sm,
     padding: 10,
     marginBottom: 16,
   },
@@ -153,17 +155,24 @@ const styles = StyleSheet.create({
   },
   filterChip: {
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: colors.border,
+    backgroundColor: colors.card,
+    borderRadius: radius.pill,
     paddingHorizontal: 10,
     paddingVertical: 6,
     marginRight: 8,
     marginBottom: 8,
   },
   filterChipActive: {
-    backgroundColor: "#eee",
+    borderColor: colors.primary,
+    backgroundColor: colors.primaryLight,
   },
   filterChipText: {
     fontSize: 14,
+    color: colors.textPrimary,
+  },
+  filterChipTextActive: {
+    color: colors.primaryDark,
   },
   imageModeRow: {
     flexDirection: "row",

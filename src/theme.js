@@ -39,7 +39,8 @@ export const radius = {
   sm:   8,
   md:   12,
   lg:   16,
-  pill: 20,
+  full: 999,
+  pill: 999,
 };
 
 export const spacing = {
@@ -48,6 +49,18 @@ export const spacing = {
   md: 16,
   lg: 24,
   xl: 40,
+};
+
+export const typography = {
+  pageTitle:   { fontSize: 28, fontWeight: "800" },
+  inputTitle:  { fontSize: 20, fontWeight: "700" },
+  cardTitle:   { fontSize: 17, fontWeight: "700" },
+  sectionTitle:{ fontSize: 18, fontWeight: "700" },
+  body:        { fontSize: 15 },
+  bodySemibold:{ fontSize: 16, fontWeight: "600" },
+  label:       { fontSize: 13, fontWeight: "600" },
+  labelSm:     { fontSize: 12, fontWeight: "600" },
+  button:      { fontSize: 15, fontWeight: "700" },
 };
 
 export const shadow = {

@@ -14,7 +14,7 @@ export function ForgotPasswordView({
     <View style={styles.container}>
       <Text style={styles.title}>Forgot Password</Text>
       <Text style={styles.subtitle}>
-        Enter your email address and we'll send you a password reset link.
+        Enter your email address and we&apos;ll send you a password reset link.
       </Text>
 
       <TextInput
@@ -35,7 +35,7 @@ export function ForgotPasswordView({
         disabled={isLoading}
       >
         {isLoading ? (
-          <ActivityIndicator color="#ffffff" />
+          <ActivityIndicator color={colors.card} />
         ) : (
           <Text style={styles.buttonText}>Send Reset Email</Text>
         )}
@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     padding: 24,
-    backgroundColor: "#fff",
+    backgroundColor: colors.background,
   },
   title: {
     fontSize: 28,
@@ -63,36 +63,42 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 14,
-    color: "#666",
+    color: colors.textSecondary,
     marginBottom: 24,
     textAlign: "center",
   },
   input: {
+    height: 50,
     borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
+    borderColor: colors.border,
+    borderRadius: radius.sm,
+    backgroundColor: colors.card,
     padding: 12,
-    marginBottom: 12,
+    marginVertical: 10,
+    fontSize: 16,
   },
   errorText: {
-    color: "red",
-    marginBottom: 12,
+    color: colors.error,
+    fontSize: 14,
+    marginVertical: 10,
+    paddingHorizontal: 10,
     textAlign: "center",
   },
   button: {
-      backgroundColor: colors.primary,
-      padding: 15,
-      marginVertical: 15,
-      borderRadius: radius.sm,
-      justifyContent: "center",
-      alignItems: "center",
-      minHeight: 50,
-    },
+    backgroundColor: colors.primary,
+    padding: 15,
+    marginVertical: 15,
+    borderRadius: radius.sm,
+    justifyContent: "center",
+    alignItems: "center",
+    minHeight: 50,
+  },
   buttonDisabled: {
     opacity: 0.7,
   },
   buttonText: {
-    color: "#fff",
+    color: colors.card,
+    fontSize: 16,
     fontWeight: "bold",
   },
   linkText: {

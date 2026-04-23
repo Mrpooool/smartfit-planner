@@ -7,7 +7,13 @@ export function CalendarView(props) {
 
   return (
     <View style={styles.container}>
-      <Calendar markedDates={markedDates} />
+      <Calendar
+        markedDates={markedDates}
+        theme={{
+          todayTextColor: colors.primary,
+          arrowColor: colors.primary,
+        }}
+      />
     </View>
   );
 }

@@ -1,4 +1,5 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { colors, radius, shadow, typography } from "../theme";
 import { ExerciseImage } from "./common/ExerciseImage";
 
 export function ActionDetailsView({ exercise }) {
@@ -45,24 +46,35 @@ export function ActionDetailsView({ exercise }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f9fafb" },
+  container: { flex: 1, backgroundColor: colors.background },
   content: { padding: 20, paddingBottom: 40 },
-  gif: { width: "100%", height: 300, borderRadius: 16, marginBottom: 24 },
-  title: { fontSize: 28, fontWeight: "800", color: "#111827", marginBottom: 24, textTransform: "capitalize" },
+  gif: { width: "100%", height: 300, borderRadius: radius.lg, marginBottom: 24 },
+  title: {
+    ...typography.pageTitle,
+    color: colors.textPrimary,
+    marginBottom: 24,
+    textTransform: "capitalize",
+  },
   infoCard: {
-    flexDirection: "row", justifyContent: "space-between", alignItems: "center",
-    backgroundColor: "#ffffff", padding: 16, borderRadius: 12, marginBottom: 12,
-    shadowColor: "#000", shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05, shadowRadius: 3, elevation: 2,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: colors.card,
+    padding: 16,
+    borderRadius: radius.md,
+    marginBottom: 12,
+    ...shadow.md,
   },
-  infoLabel: { fontSize: 15, fontWeight: "600", color: "#6b7280" },
-  infoValue: { fontSize: 16, fontWeight: "700", color: "#111827", textTransform: "capitalize" },
+  infoLabel: { ...typography.body, fontWeight: "600", color: colors.textSecondary },
+  infoValue: { ...typography.bodySemibold, fontWeight: "700", color: colors.textPrimary, textTransform: "capitalize" },
   instructionsContainer: {
-    backgroundColor: "#fff", padding: 20, borderRadius: 16, marginTop: 12,
-    shadowColor: "#000", shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05, shadowRadius: 4, elevation: 2,
+    backgroundColor: colors.card,
+    padding: 20,
+    borderRadius: radius.lg,
+    marginTop: 12,
+    ...shadow.md,
   },
-  sectionTitle: { fontSize: 18, fontWeight: "700", color: "#111827", marginBottom: 12 },
-  instructionText: { fontSize: 15, color: "#4b5563", lineHeight: 24 },
-  instructionStep: { fontSize: 15, color: "#4b5563", lineHeight: 24, marginBottom: 8 },
+  sectionTitle: { ...typography.sectionTitle, color: colors.textPrimary, marginBottom: 12 },
+  instructionText: { ...typography.body, color: colors.textMuted, lineHeight: 24 },
+  instructionStep: { ...typography.body, color: colors.textMuted, lineHeight: 24, marginBottom: 8 },
 });

@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { colors, radius } from "../theme";
+import { colors, radius, shadow, typography } from "../theme";
 import { ExerciseImage } from "./common/ExerciseImage";
 
 /**
@@ -120,7 +120,7 @@ export function PlanView({
         style={styles.planNameInput}
         value={plan.name || ""}
         placeholder="Enter a plan name…"
-        placeholderTextColor="#9ca3af"
+        placeholderTextColor={colors.textTertiary}
         onChangeText={onRenamePlan}
       />
 
@@ -130,44 +130,73 @@ export function PlanView({
         <>
           {onRegenerate ? (
             <TouchableOpacity
-              style={isRegenerating ? styles.regenerateButtonDisabled : styles.regenerateButton}
+              style={[
+                styles.actionButton,
+                styles.outlineButton,
+                isRegenerating && styles.outlineButtonDisabled,
+              ]}
               onPress={onRegenerate}
               disabled={isRegenerating}
             >
-              <Text style={isRegenerating ? styles.regenerateTextDisabled : styles.regenerateText}>
+              <Text
+                style={[
+                  styles.actionButtonText,
+                  styles.outlineButtonText,
+                  isRegenerating && styles.mutedButtonText,
+                ]}
+              >
                 {isRegenerating ? "Regenerating..." : "↻  REGENERATE PLAN"}
               </Text>
             </TouchableOpacity>
           ) : null}
 
           <TouchableOpacity
-            style={isRegenerating ? styles.saveButtonDisabled : styles.saveButton}
+            style={[
+              styles.actionButton,
+              styles.primaryButton,
+              isRegenerating && styles.primaryButtonDisabled,
+            ]}
             onPress={onSavePlan}
             disabled={isRegenerating}
           >
-            <Text style={isRegenerating ? styles.saveButtonTextDisabled : styles.buttonText}>➕  ADD TO MY PLAN</Text>
+            <Text
+              style={[
+                styles.actionButtonText,
+                isRegenerating ? styles.primaryButtonTextDisabled : styles.inverseButtonText,
+              ]}
+            >
+              ➕  ADD TO MY PLAN
+            </Text>
           </TouchableOpacity>
         </>
       ) : (
         <>
           {onAddExercise ? (
-            <TouchableOpacity style={styles.addExerciseButton} onPress={onAddExercise}>
-              <Text style={styles.addExerciseText}>＋  Add Exercise from Explore</Text>
+            <TouchableOpacity style={[styles.actionButton, styles.primaryButton]} onPress={onAddExercise}>
+              <Text style={[styles.actionButtonText, styles.inverseButtonText]}>＋  Add Exercise from Explore</Text>
             </TouchableOpacity>
           ) : null}
 
           <TouchableOpacity
-            style={isCompletedToday ? styles.completeButtonDisabled : styles.completeButton}
+            style={[
+              styles.actionButton,
+              isCompletedToday ? styles.neutralButton : styles.successButton,
+            ]}
             onPress={onMarkCompleted}
           >
-            <Text style={isCompletedToday ? styles.buttonTextDisabled : styles.buttonText}>
+            <Text
+              style={[
+                styles.actionButtonText,
+                isCompletedToday ? styles.secondaryButtonText : styles.inverseButtonText,
+              ]}
+            >
               {isCompletedToday ? "✅  COMPLETED TODAY" : "✅  MARK AS COMPLETED"}
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.deleteButton} onPress={onDeletePlan}>
+          <TouchableOpacity style={[styles.actionButton, styles.deleteButton]} onPress={onDeletePlan}>
             <Ionicons name="remove-circle-outline" size={20} color={colors.error} style={{ marginRight: 6 }} />
-            <Text style={styles.deleteButtonText}>Delete Plan</Text>
+            <Text style={[styles.actionButtonText, styles.deleteButtonText]}>Delete Plan</Text>
           </TouchableOpacity>
         </>
       )}
@@ -176,87 +205,93 @@ export function PlanView({
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f9fafb" },
+  container: { flex: 1, backgroundColor: colors.background },
   content: { padding: 20, paddingBottom: 40 },
   backButton: { marginBottom: 12 },
-  backButtonText: { fontSize: 16, fontWeight: "600", color: colors.primary },
-  emptyContainer: { flex: 1, justifyContent: "center", alignItems: "center", padding: 40 },
+  backButtonText: { ...typography.bodySemibold, color: colors.primary },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 40,
+    backgroundColor: colors.background,
+  },
   emptyIcon: { fontSize: 48, marginBottom: 12 },
-  emptyText: { fontSize: 18, fontWeight: "600", color: "#374151" },
-  emptyHint: { fontSize: 14, color: "#9ca3af", marginTop: 6 },
-  label: { fontSize: 13, fontWeight: "600", color: "#6b7280", marginBottom: 6 },
+  emptyText: { ...typography.sectionTitle, fontWeight: "600", color: colors.textDark },
+  emptyHint: { fontSize: 14, color: colors.textTertiary, marginTop: 6 },
+  label: { ...typography.label, color: colors.textSecondary, marginBottom: 6 },
   planNameInput: {
-    fontSize: 20, fontWeight: "700", color: "#111827",
-    borderBottomWidth: 2, borderBottomColor: "#6366f1",
-    paddingVertical: 8, marginBottom: 24,
+    ...typography.inputTitle,
+    color: colors.textPrimary,
+    borderBottomWidth: 2,
+    borderBottomColor: colors.primary,
+    paddingVertical: 8,
+    marginBottom: 24,
   },
   exerciseCard: {
-    backgroundColor: "#ffffff", borderRadius: 14,
-    padding: 16, marginBottom: 16,
-    shadowColor: "#000", shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05, shadowRadius: 4, elevation: 2,
+    backgroundColor: colors.card,
+    borderRadius: radius.md,
+    padding: 16,
+    marginBottom: 16,
+    ...shadow.md,
   },
-  gif: { width: "100%", height: 200, borderRadius: 10, marginBottom: 12 },
-  exerciseName: { fontSize: 17, fontWeight: "700", color: "#111827" },
-  targetMuscle: { fontSize: 13, color: "#6366f1", marginTop: 2, marginBottom: 10 },
+  gif: { width: "100%", height: 200, borderRadius: radius.sm, marginBottom: 12 },
+  exerciseName: { ...typography.cardTitle, color: colors.textPrimary },
+  targetMuscle: { ...typography.label, color: colors.primary, marginTop: 2, marginBottom: 10 },
   setsRepsRow: { flexDirection: "row", gap: 16, marginBottom: 10 },
   fieldGroup: { flex: 1 },
-  fieldLabel: { fontSize: 12, fontWeight: "600", color: "#6b7280", marginBottom: 4 },
+  fieldLabel: { ...typography.labelSm, color: colors.textSecondary, marginBottom: 4 },
   numberInput: {
-    backgroundColor: "#f3f4f6", borderRadius: 8,
-    paddingHorizontal: 12, paddingVertical: 10,
-    fontSize: 16, fontWeight: "600", color: "#111827",
+    ...typography.bodySemibold,
+    backgroundColor: colors.surface,
+    borderRadius: radius.sm,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    color: colors.textPrimary,
     textAlign: "center",
   },
   instructionsBox: { marginTop: 8, paddingTop: 8, borderTopWidth: 1, borderTopColor: colors.border },
-  instructionsTitle: { fontSize: 13, fontWeight: "600", color: colors.textSecondary, marginBottom: 4 },
+  instructionsTitle: { ...typography.label, color: colors.textSecondary, marginBottom: 4 },
   instructions: { fontSize: 13, color: colors.textMuted, lineHeight: 18, marginTop: 4 },
-  saveButton: {
-    backgroundColor: "#6366f1", padding: 16, borderRadius: 12,
-    alignItems: "center", marginTop: 12,
+  actionButton: {
+    padding: 16,
+    borderRadius: radius.md,
+    alignItems: "center",
+    marginTop: 12,
   },
-  saveButtonDisabled: {
-    backgroundColor: "#c7d2fe", padding: 16, borderRadius: 12,
-    alignItems: "center", marginTop: 12,
+  primaryButton: {
+    backgroundColor: colors.primary,
   },
-  saveButtonTextDisabled: {
-    color: "#eef2ff", fontWeight: "bold", fontSize: 15,
+  primaryButtonDisabled: {
+    backgroundColor: colors.primaryBorder,
   },
-  regenerateButton: {
-    backgroundColor: "#ffffff", padding: 16, borderRadius: 12,
-    alignItems: "center", marginTop: 12, borderWidth: 1, borderColor: "#6366f1",
+  successButton: {
+    backgroundColor: colors.success,
   },
-  regenerateButtonDisabled: {
-    backgroundColor: "#f3f4f6", padding: 16, borderRadius: 12,
-    alignItems: "center", marginTop: 12, borderWidth: 1, borderColor: "#d1d5db",
+  neutralButton: {
+    backgroundColor: colors.disabled,
   },
-  regenerateText: {
-    color: "#6366f1", fontWeight: "bold", fontSize: 15,
+  outlineButton: {
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.primary,
   },
-  regenerateTextDisabled: {
-    color: "#9ca3af", fontWeight: "bold", fontSize: 15,
+  outlineButtonDisabled: {
+    backgroundColor: colors.surface,
+    borderColor: colors.borderLight,
   },
-  addExerciseButton: {
-    backgroundColor: "#6366f1", padding: 16, borderRadius: 12,
-    alignItems: "center", marginTop: 12,
-  },
-  addExerciseText: {
-    color: "#fff", fontWeight: "bold", fontSize: 15,
-  },
-  completeButton: {
-    backgroundColor: "#10b981", padding: 16, borderRadius: 12,
-    alignItems: "center", marginTop: 12,
-  },
-  completeButtonDisabled: {
-    backgroundColor: "#d1d5db", padding: 16, borderRadius: 12,
-    alignItems: "center", marginTop: 12,
-  },
-  buttonTextDisabled: { color: "#6b7280", fontWeight: "bold", fontSize: 15 },
   deleteButton: {
-    flexDirection: "row", justifyContent: "center",
-    backgroundColor: "transparent", padding: 16, borderRadius: radius.md,
-    alignItems: "center", marginTop: 12, borderWidth: 1, borderColor: colors.error,
+    flexDirection: "row",
+    justifyContent: "center",
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: colors.error,
   },
-  buttonText: { color: "#fff", fontWeight: "bold", fontSize: 15 },
-  deleteButtonText: { color: "#ef4444", fontWeight: "bold", fontSize: 15 },
+  actionButtonText: { ...typography.button },
+  inverseButtonText: { color: colors.card },
+  primaryButtonTextDisabled: { color: colors.primaryDark },
+  outlineButtonText: { color: colors.primary },
+  secondaryButtonText: { color: colors.textSecondary },
+  mutedButtonText: { color: colors.disabledText },
+  deleteButtonText: { color: colors.error },
 });
