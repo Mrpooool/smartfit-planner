@@ -4,6 +4,7 @@ import {
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signOut,
+  updateProfile,
 } from "firebase/auth";
 import { userStore } from "../model/userStore";
 import { auth } from "./firebaseConfig";
@@ -14,7 +15,7 @@ import { auth } from "./firebaseConfig";
 export function connectAuth() {
   onAuthStateChanged(auth, function onAuthStateChangedACB(user) {
     if (user) {
-      userStore.setUser(user.uid, user.email);
+      userStore.setUser(user.uid, user.email, user.displayName);
     } else {
       userStore.clearUser();
     }
@@ -25,8 +26,14 @@ export function loginUser(email, password) {
   return signInWithEmailAndPassword(auth, email, password);
 }
 
-export function registerUser(email, password) {
-  return createUserWithEmailAndPassword(auth, email, password);
+export async function registerUser(email, password, username) {
+  const credential = await createUserWithEmailAndPassword(auth, email, password);
+  const displayName = username.trim();
+
+  await updateProfile(credential.user, { displayName });
+  userStore.setUser(credential.user.uid, credential.user.email, displayName);
+
+  return credential;
 }
 
 export function logoutUser() {

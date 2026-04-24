@@ -10,12 +10,22 @@ export default observer(function RegisterPresenter() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  async function onRegisterACB(email, password) {
+  async function onRegisterACB(email, password, username) {
+    const trimmedEmail = email.trim();
+    const trimmedUsername = username.trim();
+
+    if (!trimmedEmail || !trimmedUsername || !password.trim()) {
+      const errorMessage = "Please enter email, username, and password";
+      setError(errorMessage);
+      uiStore.showToast(errorMessage, "error");
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
     try {
-      await registerUser(email, password);
+      await registerUser(trimmedEmail, password, trimmedUsername);
       uiStore.showToast("Account created!", "success");
       router.replace("/(tabs)");
     } catch (err) {

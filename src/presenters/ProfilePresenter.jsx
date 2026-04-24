@@ -38,6 +38,7 @@ export default observer(function ProfilePresenter() {
     <ProfileView
       savedPlans={planStore.savedPlans}
       email={userStore.email}
+      username={userStore.username}
       completedDates={allCompletedDates}
       totalWorkouts={allCompletedDates.length}
       thisWeekCount={getThisWeekCount()}

@@ -82,7 +82,7 @@ export default observer(function GeneratorPresenter() {
       equipment={formParams.equipment}
       experienceLevel={formParams.experienceLevel}
       targetMuscle={formParams.targetMuscle}
-      email={userStore.email}
+      username={userStore.username}
       promise={planPromiseState.promise}
       data={planPromiseState.data}
       error={planPromiseState.error}

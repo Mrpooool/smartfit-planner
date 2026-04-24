@@ -5,10 +5,15 @@ import { colors, radius } from "../theme";
 
 export function RegisterView(props) {
   const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
   function emailACB(text) {
     setEmail(text);
+  }
+
+  function usernameACB(text) {
+    setUsername(text);
   }
 
   function passwordACB(text) {
@@ -16,10 +21,7 @@ export function RegisterView(props) {
   }
 
   function registerACB() {
-    if (!email.trim() || !password.trim()) {
-      return;
-    }
-    props.onRegister(email, password);
+    props.onRegister(email, password, username);
   }
 
   function backACB() {
@@ -38,6 +40,16 @@ export function RegisterView(props) {
         editable={!props.isLoading}
         keyboardType="email-address"
         autoCapitalize="none"
+      />
+
+      <TextInput
+        style={styles.input}
+        placeholder="Username"
+        value={username}
+        onChangeText={usernameACB}
+        editable={!props.isLoading}
+        autoCapitalize="words"
+        maxLength={24}
       />
 
       <TextInput

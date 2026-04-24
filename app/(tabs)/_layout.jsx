@@ -1,7 +1,7 @@
-import { Redirect, Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { Redirect, Tabs } from "expo-router";
 import { observer } from "mobx-react-lite";
-import { View, Text } from "react-native";
+import { Text, View } from "react-native";
 import { userStore } from "../../src/model/userStore";
 import { colors } from "../../src/theme";
 
@@ -30,7 +30,7 @@ export default observer(function TabsLayout() {
         options={{
           title: "Home",
           tabBarIcon: function renderHomeIconACB({ color, size, focused }) {
-            return <Ionicons name={focused ? "flash" : "flash-outline"} color={color} size={size} />;
+            return <Ionicons name={focused ? "home" : "home-outline"} color={color} size={size} />;
           },
         }}
       />

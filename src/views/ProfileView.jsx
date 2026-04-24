@@ -2,8 +2,8 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-nati
 import { CalendarView } from "./CalendarView";
 import { colors, radius, shadow } from "../theme";
 
-export function ProfileView({ email, completedDates, totalWorkouts, thisWeekCount, savedPlansCount, onNavigateToPlans, onLogout }) {
-  const avatarLetter = email ? email[0].toUpperCase() : "?";
+export function ProfileView({ email, username, completedDates, totalWorkouts, thisWeekCount, savedPlansCount, onNavigateToPlans, onLogout }) {
+  const avatarLetter = username ? username[0].toUpperCase() : "?";
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -12,6 +12,7 @@ export function ProfileView({ email, completedDates, totalWorkouts, thisWeekCoun
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>{avatarLetter}</Text>
         </View>
+        <Text style={styles.username}>{username}</Text>
         <Text style={styles.email}>{email}</Text>
       </View>
 
@@ -63,6 +64,12 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: "700",
     color: colors.card,
+  },
+  username: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: colors.textPrimary,
+    marginBottom: 4,
   },
   email: {
     fontSize: 14,

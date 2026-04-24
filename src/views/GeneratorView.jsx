@@ -35,7 +35,7 @@ export function GeneratorView(props) {
           colors={["transparent", "rgba(0,0,0,0.38)", "rgba(0,0,0,0.74)"]}
           style={styles.heroGradient}
         >
-          <Text style={styles.heroGreeting}>Hi, {props.email} 👋</Text>
+          <Text style={styles.heroGreeting}>Hi, {props.username} !</Text>
           <Text style={styles.heroTitle}>SmartFit Planner</Text>
           <Text style={styles.heroSubtitle}>Build your perfect workout, powered by AI</Text>
         </LinearGradient>
