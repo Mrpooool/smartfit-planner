@@ -32,10 +32,10 @@ export function GeneratorView(props) {
       >
         {/* 三段式渐变：透明 → 半透明(0.38) → 深色(0.74)，过渡更自然 */}
         <LinearGradient
-          colors={["transparent", "rgba(0,0,0,0.38)", "rgba(0,0,0,0.74)"]}
+          colors={["transparent", colors.heroScrimMid, colors.heroScrimStrong]}
           style={styles.heroGradient}
         >
-          <Text style={styles.heroGreeting}>Hi, {props.username} !</Text>
+          <Text style={styles.heroGreeting}>Hi, {props.username} 👋</Text>
           <Text style={styles.heroTitle}>SmartFit Planner</Text>
           <Text style={styles.heroSubtitle}>Build your perfect workout, powered by AI</Text>
         </LinearGradient>
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
   },
   heroGreeting: {
     fontSize: 13,
-    color: "rgba(255,255,255,0.78)",
+    color: colors.whiteMuted,
     fontWeight: "500",
     letterSpacing: 0.4,
     marginBottom: 6,
@@ -180,13 +180,13 @@ const styles = StyleSheet.create({
   heroTitle: {
     fontSize: 30,
     fontWeight: "800",
-    color: "#ffffff",
+    color: colors.white,
     letterSpacing: 0.2,
     marginBottom: 6,
   },
   heroSubtitle: {
     fontSize: 14,
-    color: "rgba(255,255,255,0.70)",
+    color: colors.whiteSubtle,
     fontWeight: "400",
   },
 

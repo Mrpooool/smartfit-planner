@@ -41,7 +41,7 @@ export function AddToPlanModal({
   }
 
   function handleConfirmCreate() {
-    var name = (newPlanName || "").trim();
+    const name = (newPlanName || "").trim();
     if (!name) return;
     onCreateNewPlan(name);
     setNewPlanName("");
@@ -60,7 +60,7 @@ export function AddToPlanModal({
   }
 
   function renderPlanItem(info) {
-    var plan = info.item;
+    const plan = info.item;
     return (
       <TouchableOpacity
         style={styles.planItem}
@@ -153,7 +153,7 @@ export function AddToPlanModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.45)",
+    backgroundColor: colors.overlay,
     justifyContent: "center",
     alignItems: "center",
     padding: 24,

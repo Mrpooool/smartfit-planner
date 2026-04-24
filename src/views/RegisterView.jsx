@@ -65,7 +65,7 @@ export function RegisterView(props) {
 
       <Pressable onPress={registerACB} disabled={props.isLoading} style={styles.button}>
         {props.isLoading ? (
-          <ActivityIndicator color="#ffffff" />
+          <ActivityIndicator color={colors.card} />
         ) : (
           <Text style={styles.buttonText}>Create Account</Text>
         )}

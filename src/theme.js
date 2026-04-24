@@ -2,14 +2,17 @@
 
 export const colors = {
   // Brand
-  primary:       "#6366f1",
-  primaryDark:   "#4338ca",
-  primaryLight:  "#e0e7ff",
-  primaryBorder: "#c7d2fe",
+  primary:       "#5b5cf6",
+  primaryDark:   "#3f3bd8",
+  primaryLight:  "#ecebff",
+  primarySoft:   "#f5f4ff",
+  primaryBorder: "#c7c6ff",
 
   // Semantic
-  success:         "#10b981",
-  successCalendar: "#22c55e",
+  success:         "#5b5cf6",
+  successLight:    "#ecebff",
+  successDark:     "#3f3bd8",
+  successCalendar: "#5b5cf6",
   error:           "#ef4444",
   warning:         "#b45309",
   warningBg:       "#fef3c7",
@@ -33,12 +36,25 @@ export const colors = {
   // States
   disabled:     "#d1d5db",
   disabledText: "#9ca3af",
+
+  // Overlays / feedback
+  overlay: "rgba(17,24,39,0.48)",
+  heroScrimMid: "rgba(0,0,0,0.38)",
+  heroScrimStrong: "rgba(0,0,0,0.74)",
+  toastSuccess: "rgba(91,92,246,0.95)",
+  toastWarning: "rgba(180,83,9,0.95)",
+  toastInfo: "rgba(91,92,246,0.95)",
+  white: "#ffffff",
+  whiteMuted: "rgba(255,255,255,0.78)",
+  whiteSubtle: "rgba(255,255,255,0.70)",
+  whiteGlass: "rgba(255,255,255,0.72)",
 };
 
 export const radius = {
-  sm:   8,
-  md:   12,
-  lg:   16,
+  xs:   8,
+  sm:   10,
+  md:   16,
+  lg:   24,
   full: 999,
   pill: 999,
 };
@@ -77,5 +93,11 @@ export const shadow = {
     shadowOpacity: 0.06,
     shadowRadius: 4,
     elevation: 2,
+  },
+  toast: {
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
   },
 };

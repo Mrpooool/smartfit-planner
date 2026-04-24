@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { Text, StyleSheet, Animated, Platform } from "react-native";
 import { observer } from "mobx-react-lite";
 import { uiStore } from "../../model/uiStore";
+import { colors, radius, shadow } from "../../theme";
 
 export const GlobalToast = observer(function GlobalToast() {
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -47,24 +48,21 @@ const styles = StyleSheet.create({
     zIndex: 9999,
     paddingHorizontal: 24,
     paddingVertical: 14,
-    borderRadius: 30,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
+    borderRadius: radius.pill,
+    ...shadow.toast,
     elevation: 5,
   },
   successBg: {
-    backgroundColor: "rgba(16, 185, 129, 0.95)", // Emerald green
+    backgroundColor: colors.toastSuccess,
   },
   warningBg: {
-    backgroundColor: "rgba(245, 158, 11, 0.95)", // Amber orange
+    backgroundColor: colors.toastWarning,
   },
   infoBg: {
-    backgroundColor: "rgba(59, 130, 246, 0.95)", // Blue
+    backgroundColor: colors.toastInfo,
   },
   text: {
-    color: "#fff",
+    color: colors.white,
     fontSize: 15,
     fontWeight: "600",
     textAlign: "center",

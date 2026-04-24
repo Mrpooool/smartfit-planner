@@ -1,4 +1,5 @@
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { colors } from "../../theme";
 
 export function AsyncStateView({ promise, error, empty, data }) {
   if (error) {
@@ -12,7 +13,7 @@ export function AsyncStateView({ promise, error, empty, data }) {
   if (promise && (data === null || data === undefined)) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large" color={colors.primary} />
         <Text style={styles.text}>Loading...</Text>
       </View>
     );
@@ -38,12 +39,12 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 16,
-    color: "#666",
+    color: colors.textSecondary,
     marginTop: 8,
   },
   errorText: {
     fontSize: 14,
-    color: "red",
+    color: colors.error,
     textAlign: "center",
   },
 });

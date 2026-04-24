@@ -46,7 +46,7 @@ export function LoginView(props) {
 
         <Pressable style={styles.button} disabled={props.isLoading} onPress={loginACB}>
           {props.isLoading?(
-            <ActivityIndicator color="#ffffff" />
+            <ActivityIndicator color={colors.card} />
           ):(<Text style={styles.buttonText}>Login</Text>) }
         </Pressable>
 

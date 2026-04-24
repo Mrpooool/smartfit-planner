@@ -36,7 +36,7 @@ export function PlanDirectoryView({
   }
 
   function handleConfirmCreate() {
-    var name = (newPlanName || "").trim();
+    const name = (newPlanName || "").trim();
     if (!name) return;
     onCreateNewPlan(name);
     setNewPlanName("");
@@ -49,10 +49,10 @@ export function PlanDirectoryView({
   }
 
   function renderPlanCard(info) {
-    var plan = info.item;
-    var weekCount = getThisWeekCount(plan);
-    var exerciseCount = (plan.exercises || []).length;
-    var completedToday = isCompletedToday ? isCompletedToday(plan) : false;
+    const plan = info.item;
+    const weekCount = getThisWeekCount(plan);
+    const exerciseCount = (plan.exercises || []).length;
+    const completedToday = isCompletedToday ? isCompletedToday(plan) : false;
 
     return (
       <TouchableOpacity
@@ -235,18 +235,18 @@ const styles = StyleSheet.create({
   },
   cardCompleted: {
     borderWidth: 1.5,
-    borderColor: "#10b981",
+    borderColor: colors.success,
   },
   completedBadge: {
-    backgroundColor: "#d1fae5",
-    borderRadius: 6,
+    backgroundColor: colors.successLight,
+    borderRadius: radius.pill,
     paddingHorizontal: 8,
     paddingVertical: 2,
   },
   completedBadgeText: {
     fontSize: 11,
     fontWeight: "700",
-    color: "#059669",
+    color: colors.successDark,
   },
   emptyBox: {
     flex: 1,

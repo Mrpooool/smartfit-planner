@@ -153,7 +153,7 @@ function getPlaceholderTheme(exercise) {
   // 缺图时按大肌群给不同颜色和图标，让占位状态也能传达一点语义。
   if (containsAny(muscleText, ["chest", "shoulder", "tricep"])) {
     return {
-      colors: ["#eef2ff", "#e0e7ff"],
+      colors: [colors.primarySoft, colors.primaryLight],
       accent: colors.primaryDark,
       icon: "barbell-outline",
     };
@@ -161,30 +161,30 @@ function getPlaceholderTheme(exercise) {
 
   if (containsAny(muscleText, ["back", "lat", "bicep", "forearm"])) {
     return {
-      colors: ["#ecfeff", "#cffafe"],
-      accent: "#0f766e",
+      colors: [colors.primarySoft, colors.primaryLight],
+      accent: colors.primary,
       icon: "body-outline",
     };
   }
 
   if (containsAny(muscleText, ["quad", "hamstring", "glute", "calf", "leg"])) {
     return {
-      colors: ["#eff6ff", "#dbeafe"],
-      accent: "#1d4ed8",
+      colors: [colors.primarySoft, colors.primaryLight],
+      accent: colors.primaryDark,
       icon: "walk-outline",
     };
   }
 
   if (containsAny(muscleText, ["waist", "ab", "core"])) {
     return {
-      colors: ["#fffbeb", "#fef3c7"],
-      accent: "#b45309",
+      colors: [colors.primarySoft, colors.primaryLight],
+      accent: colors.primary,
       icon: "pulse-outline",
     };
   }
 
   return {
-    colors: ["#f3f4f6", "#e5e7eb"],
+    colors: [colors.surface, colors.border],
     accent: colors.textSecondary,
     icon: "fitness-outline",
   };
@@ -224,19 +224,19 @@ const styles = StyleSheet.create({
     width: 58,
     height: 58,
     // 半径等于宽高的一半时，方块会变成圆。
-    borderRadius: 29,
+    borderRadius: radius.full,
     // 这是圆圈描边；颜色不是写死的，而是下面通过 borderColor 动态传入。
     borderWidth: 2,
     alignItems: "center",
     justifyContent: "center",
     // 给圆圈里加一层半透明白底，让图标从渐变背景里浮出来。
-    backgroundColor: "rgba(255,255,255,0.72)",
+    backgroundColor: colors.whiteGlass,
     marginBottom: 12,
   },
   iconBadgeCompact: {
     width: 34,
     height: 34,
-    borderRadius: 17,
+    borderRadius: radius.full,
     marginBottom: 0,
   },
   placeholderTitle: {

@@ -98,13 +98,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     paddingHorizontal: 14,
     paddingVertical: 8,
-    borderRadius: radius.sm,
+    borderRadius: radius.pill,
   },
   addButtonAdded: {
     backgroundColor: colors.primaryLight,
     paddingHorizontal: 14,
     paddingVertical: 8,
-    borderRadius: radius.sm,
+    borderRadius: radius.pill,
   },
   addButtonText: {
     fontSize: 13,

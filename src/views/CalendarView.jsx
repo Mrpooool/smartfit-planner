@@ -10,6 +10,11 @@ export function CalendarView(props) {
       <Calendar
         markedDates={markedDates}
         theme={{
+          calendarBackground: colors.card,
+          monthTextColor: colors.textPrimary,
+          textSectionTitleColor: colors.textSecondary,
+          dayTextColor: colors.textPrimary,
+          textDisabledColor: colors.textTertiary,
           todayTextColor: colors.primary,
           arrowColor: colors.primary,
         }}
@@ -25,6 +30,7 @@ function makeMarkedDates(completedDates = []) {
     result[date] = {
       selected: true,
       selectedColor: colors.successCalendar,
+      selectedTextColor: colors.card,
     };
   });
 
@@ -35,7 +41,8 @@ const styles = StyleSheet.create({
   container: {
     marginTop: 12,
     marginBottom: 20,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
+    backgroundColor: colors.card,
     overflow: "hidden",
   },
 });
