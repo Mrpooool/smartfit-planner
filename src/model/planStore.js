@@ -112,8 +112,9 @@ const model = {
     }
     if (!targetPlan) return "not_found";
 
+    var nextExerciseId = getExerciseKey(exercise);
     var isDuplicate = (targetPlan.exercises || []).some(function matchCB(ex) {
-      return ex.id === exercise.id;
+      return getExerciseKey(ex) === nextExerciseId;
     });
     if (isDuplicate) return "duplicate";
 
@@ -130,3 +131,7 @@ const model = {
 };
 
 export const planStore = observable(model);
+
+function getExerciseKey(exercise) {
+  return String(exercise?.exerciseDbId || exercise?.exerciseId || exercise?.id || "");
+}

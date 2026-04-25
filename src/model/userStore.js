@@ -1,10 +1,11 @@
 import { action, observable } from "mobx";
 
 export const userStore = observable({
-  uid: null,   // Firebase Auth uid — null means not logged in
+  uid: null,
   email: null,
   username: null,
-  ready: false, // true once Firebase Auth state is resolved (onAuthStateChanged fires)
+  showAnimatedListImages: false,
+  ready: false,
 
   setUser: action(function setUser(uid, email, username) {
     this.uid = uid;
@@ -13,10 +14,15 @@ export const userStore = observable({
     this.ready = true;
   }),
 
+  setShowAnimatedListImages: action(function setShowAnimatedListImages(value) {
+    this.showAnimatedListImages = Boolean(value);
+  }),
+
   clearUser: action(function clearUser() {
     this.uid = null;
     this.email = null;
     this.username = null;
+    this.showAnimatedListImages = false;
     this.ready = true;
   }),
 });

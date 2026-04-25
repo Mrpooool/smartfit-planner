@@ -8,16 +8,6 @@ const headers = {
   "X-RapidAPI-Host": "exercisedb.p.rapidapi.com",
 };
 
-const responseCache = new Map();
-const inflightRequests = new Map();
-
-const CACHE_TTL_MS = {
-  searchExercisesByName: 10 * 60 * 1000,
-  getExercisesByMuscle: 30 * 60 * 1000,
-  getExerciseById: 24 * 60 * 60 * 1000,
-  getTargetMuscleList: 24 * 60 * 60 * 1000,
-};
-
 export function getExerciseImageSource(exerciseId, resolution) {
   return {
     uri: `${BASE_URL}/image?resolution=${resolution || 360}&exerciseId=${encodeURIComponent(exerciseId)}`,
@@ -31,11 +21,7 @@ export function getExerciseImageSource(exerciseId, resolution) {
  * @returns {Promise<Object[]>}
  */
 export async function searchExercisesByName(name) {
-  return fetchJsonWithCache(
-    "searchExercisesByName",
-    `${BASE_URL}/exercises/name/${encodeURIComponent(name.toLowerCase())}?offset=0&limit=5`,
-    CACHE_TTL_MS.searchExercisesByName
-  );
+  return fetchJson(`${BASE_URL}/exercises/name/${encodeURIComponent(name.toLowerCase())}?offset=0&limit=5`);
 }
 
 /**
@@ -44,11 +30,7 @@ export async function searchExercisesByName(name) {
  * @returns {Promise<Object[]>}
  */
 export async function getExercisesByMuscle(muscle) {
-  return fetchJsonWithCache(
-    "getExercisesByMuscle",
-    `${BASE_URL}/exercises/bodyPart/${encodeURIComponent(muscle)}?offset=0&limit=20`,
-    CACHE_TTL_MS.getExercisesByMuscle
-  );
+  return fetchJson(`${BASE_URL}/exercises/bodyPart/${encodeURIComponent(muscle)}?offset=0&limit=20`);
 }
 
 /**
@@ -57,11 +39,7 @@ export async function getExercisesByMuscle(muscle) {
  * @returns {Promise<Object>}
  */
 export async function getExerciseById(exerciseId) {
-  return fetchJsonWithCache(
-    "getExerciseById",
-    `${BASE_URL}/exercises/exercise/${encodeURIComponent(exerciseId)}`,
-    CACHE_TTL_MS.getExerciseById
-  );
+  return fetchJson(`${BASE_URL}/exercises/exercise/${encodeURIComponent(exerciseId)}`);
 }
 
 /**
@@ -69,52 +47,17 @@ export async function getExerciseById(exerciseId) {
  * @returns {Promise<string[]>}
  */
 export async function getTargetMuscleList() {
-  return fetchJsonWithCache(
-    "getTargetMuscleList",
-    `${BASE_URL}/exercises/targetList`,
-    CACHE_TTL_MS.getTargetMuscleList
-  );
+  return fetchJson(`${BASE_URL}/exercises/targetList`);
 }
 
 export function clearExerciseDbCache() {
-  responseCache.clear();
-  inflightRequests.clear();
+  // Response caching removed intentionally.
 }
 
-async function fetchJsonWithCache(scope, url, ttlMs) {
-  const cacheKey = `${scope}:${url}`;
-  const cachedEntry = responseCache.get(cacheKey);
-
-  if (isCacheEntryValid(cachedEntry)) {
-    return cachedEntry.data;
+async function fetchJson(url) {
+  const response = await fetch(url, { headers });
+  if (!response.ok) {
+    throw new Error(`ExerciseDB error: ${response.status}`);
   }
-
-  const inflightRequest = inflightRequests.get(cacheKey);
-  if (inflightRequest) {
-    return inflightRequest;
-  }
-
-  const request = fetch(url, { headers })
-    .then(async function parseResponseCB(response) {
-      if (!response.ok) {
-        throw new Error(`ExerciseDB error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      responseCache.set(cacheKey, {
-        data: data,
-        expiresAt: Date.now() + ttlMs,
-      });
-      return data;
-    })
-    .finally(function cleanupInflightCB() {
-      inflightRequests.delete(cacheKey);
-    });
-
-  inflightRequests.set(cacheKey, request);
-  return request;
-}
-
-function isCacheEntryValid(cacheEntry) {
-  return Boolean(cacheEntry && cacheEntry.expiresAt > Date.now());
+  return response.json();
 }
