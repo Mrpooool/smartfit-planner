@@ -2,12 +2,46 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-nati
 import { CalendarView } from "./CalendarView";
 import { colors, radius, shadow } from "../theme";
 
-export function ProfileView({ email, username, completedDates, totalWorkouts, thisWeekCount, savedPlansCount, onNavigateToPlans, onLogout }) {
+export function ProfileView({
+  email,
+  username,
+  completedDates,
+  totalWorkouts,
+  thisWeekCount,
+  savedPlansCount,
+  showAnimatedListImages,
+  onImageModeChange,
+  onNavigateToPlans,
+  onLogout,
+}) {
   const avatarLetter = username ? username[0].toUpperCase() : "?";
+
+  function renderImageModeButton(useAnimatedImages, label, hint) {
+    const selected = Boolean(showAnimatedListImages) === useAnimatedImages;
+
+    function handlePress() {
+      if (onImageModeChange) {
+        onImageModeChange(useAnimatedImages);
+      }
+    }
+
+    return (
+      <TouchableOpacity
+        style={[styles.imageModeButton, selected && styles.imageModeButtonActive]}
+        onPress={handlePress}
+      >
+        <Text style={[styles.imageModeLabel, selected && styles.imageModeLabelActive]}>
+          {label}
+        </Text>
+        <Text style={[styles.imageModeHint, selected && styles.imageModeHintActive]}>
+          {hint}
+        </Text>
+      </TouchableOpacity>
+    );
+  }
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* Avatar + user info */}
       <View style={styles.header}>
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>{avatarLetter}</Text>
@@ -16,7 +50,6 @@ export function ProfileView({ email, username, completedDates, totalWorkouts, th
         <Text style={styles.email}>{email}</Text>
       </View>
 
-      {/* Stats row */}
       <View style={styles.statsRow}>
         <View style={styles.statCard}>
           <Text style={styles.statNumber}>{totalWorkouts}</Text>
@@ -35,6 +68,20 @@ export function ProfileView({ email, username, completedDates, totalWorkouts, th
       <Text style={styles.sectionTitle}>Workout Calendar</Text>
       <CalendarView completedDates={completedDates} />
 
+      <Text style={styles.sectionTitle}>Exercise Preview</Text>
+      <View style={styles.imageModeRow}>
+        {renderImageModeButton(
+          false,
+          "Data Saver",
+          "Use lightweight previews to save mobile data and run more smoothly on lower-end phones"
+        )}
+        {renderImageModeButton(
+          true,
+          "Motion Preview",
+          "Show animated thumbnails for the richest browsing experience when network conditions are good"
+        )}
+      </View>
+
       <TouchableOpacity style={styles.logoutButton} onPress={onLogout}>
         <Text style={styles.logoutText}>Logout</Text>
       </TouchableOpacity>
@@ -45,8 +92,6 @@ export function ProfileView({ email, username, completedDates, totalWorkouts, th
 const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { padding: 20, paddingBottom: 40 },
-
-  // Header
   header: {
     alignItems: "center",
     marginBottom: 24,
@@ -75,8 +120,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.textSecondary,
   },
-
-  // Stats
   statsRow: {
     flexDirection: "row",
     gap: 12,
@@ -102,14 +145,47 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 16,
   },
-
   sectionTitle: {
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 12,
-    marginTop: 4,
+    marginTop: 16,
   },
-
+  imageModeRow: {
+    flexDirection: "row",
+    gap: 10,
+    marginBottom: 16,
+  },
+  imageModeButton: {
+    flex: 1,
+    backgroundColor: colors.surface,
+    borderRadius: radius.md,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...shadow.sm,
+  },
+  imageModeButtonActive: {
+    borderColor: colors.primary,
+    backgroundColor: colors.primaryLight,
+  },
+  imageModeLabel: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: colors.textPrimary,
+    marginBottom: 4,
+  },
+  imageModeLabelActive: {
+    color: colors.primaryDark,
+  },
+  imageModeHint: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    lineHeight: 16,
+  },
+  imageModeHintActive: {
+    color: colors.primaryDark,
+  },
   logoutButton: {
     marginTop: 8,
     padding: 14,
