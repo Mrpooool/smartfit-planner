@@ -39,11 +39,25 @@ jest.mock("../firebaseConfig", () => ({
   db: "mock-db",
 }));
 
+jest.mock("../../api/exerciseDbApi", () => ({
+  getExerciseById: jest.fn((exerciseId) =>
+    Promise.resolve({
+      id: exerciseId,
+      name: `Exercise ${exerciseId}`,
+      target: "chest",
+      equipment: "body weight",
+      bodyPart: "chest",
+      instructions: [],
+    })
+  ),
+}));
+
 // We need planStore to be the real MobX store so we can inspect side effects
 jest.mock("../../model/planStore", () => {
   const { observable, action } = require("mobx");
   const store = observable({
     savedPlans: [],
+    completionHistory: [],
     ready: false,
   });
   return { planStore: store };
@@ -71,9 +85,16 @@ beforeEach(() => {
   mockSnapshotCallback = undefined;
   mockSnapshotError = undefined;
   planStore.savedPlans = [];
+  planStore.completionHistory = [];
   planStore.ready = false;
   jest.clearAllMocks();
 });
+
+async function flushPromises() {
+  await Promise.resolve();
+  await Promise.resolve();
+  await new Promise((resolve) => setTimeout(resolve, 0));
+}
 
 describe("connectToPersistence", () => {
 
@@ -97,27 +118,32 @@ describe("connectToPersistence", () => {
     expect(onSnapshot).toHaveBeenCalledTimes(1);
   });
 
-  test("loads savedPlans from Firestore snapshot", () => {
+  test("loads savedPlans from Firestore initial load", async () => {
     const { fakeReaction } = createFakeWatchFunction();
+    mockDocData = {
+      savedPlans: [{ id: "p1", name: "My Plan", exercises: [{ exerciseId: "123", sets: 3, reps: 10 }], completedDates: [] }],
+    };
     connectToPersistence("user123", fakeReaction);
+    await flushPromises();
 
-    // Simulate Firestore onSnapshot callback
-    const fakePlans = [{ id: "p1", name: "My Plan", exercises: [], completedDates: [] }];
-    mockSnapshotCallback({
-      exists: () => true,
-      data: () => ({ savedPlans: fakePlans }),
+    expect(planStore.savedPlans).toHaveLength(1);
+    expect(planStore.savedPlans[0].exercises[0]).toMatchObject({
+      id: "123",
+      exerciseDbId: "123",
+      sets: 3,
+      reps: 10,
     });
-
-    expect(planStore.savedPlans).toEqual(fakePlans);
     expect(planStore.ready).toBe(true);
   });
 
-  test("handles empty/missing Firestore document gracefully", () => {
+  test("handles empty/missing Firestore document gracefully", async () => {
     const { fakeReaction } = createFakeWatchFunction();
+    mockDocData = { savedPlans: [] };
     connectToPersistence("user123", fakeReaction);
+    await flushPromises();
 
     // Simulate empty document
-    mockSnapshotCallback({
+    await mockSnapshotCallback({
       exists: () => false,
       data: () => null,
     });
@@ -150,22 +176,61 @@ describe("connectToPersistence", () => {
 
   test("applyRemote flag prevents write-back loop", async () => {
     const { fakeReaction, getCaptured } = createFakeWatchFunction();
+    mockDocData = { savedPlans: [] };
     connectToPersistence("user123", fakeReaction);
+    await flushPromises();
 
     // Get the reaction handler (save2FirestoreACB)
     const { capturedHandler } = getCaptured();
 
     // First: simulate snapshot loading data (this sets applyRemote = true temporarily)
-    mockSnapshotCallback({
+    await mockSnapshotCallback({
       exists: () => true,
-      data: () => ({ savedPlans: [{ id: "p1", name: "Test" }] }),
+      data: () => ({ savedPlans: [{ id: "p1", name: "Test", exercises: [] }] }),
     });
 
-    // planStore.ready is now true, but applyRemote should be false after snapshot completes
-    // Now manually call the handler — this simulates what reaction would do
+    await flushPromises();
+
+    // After the async snapshot settles, the "remote update" guard is released.
     await capturedHandler();
 
-    // setDoc should have been called (applyRemote is false after snapshot finishes)
     expect(setDoc).toHaveBeenCalled();
+  });
+
+  test("persists plans with exerciseId only", async () => {
+    const { fakeReaction, getCaptured } = createFakeWatchFunction();
+    connectToPersistence("user123", fakeReaction);
+
+    planStore.ready = true;
+    planStore.savedPlans = [{
+      id: "p1",
+      name: "Saved Plan",
+      createdAt: 123,
+      completedDates: [],
+      exercises: [{
+        id: "123",
+        exerciseDbId: "123",
+        name: "Push Up",
+        targetMuscle: "chest",
+        equipment: "body weight",
+        instructions: ["Keep core tight"],
+        sets: 4,
+        reps: 12,
+      }],
+    }];
+
+    const { capturedHandler } = getCaptured();
+    await capturedHandler();
+
+    expect(mockSetDocCalls[0]).toEqual({
+      savedPlans: [{
+        id: "p1",
+        name: "Saved Plan",
+        createdAt: 123,
+        completedDates: [],
+        exercises: [{ exerciseId: "123", sets: 4, reps: 12 }],
+      }],
+      completionHistory: [],
+    });
   });
 });

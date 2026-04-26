@@ -7,8 +7,6 @@ import { ProfileView } from "../views/ProfileView";
 
 export default observer(function ProfilePresenter() {
   const router = useRouter();
-
-  // Use completionHistory (independent of plan lifecycle) for stats
   const allCompletedDates = getUniqueCompletedDates([
     ...(planStore.completionHistory || []),
     ...(planStore.workoutHistory || []).map(function mapWorkoutDateCB(workout) {
@@ -20,7 +18,7 @@ export default observer(function ProfilePresenter() {
     return [...new Set(history || [])].sort();
   }
 
-  function getThisWeekCount() {//计算最近7天内完成的锻炼次数
+  function getThisWeekCount() {
     const today = new Date();
     const weekAgo = new Date(today);
     weekAgo.setDate(today.getDate() - 6);
@@ -32,7 +30,6 @@ export default observer(function ProfilePresenter() {
 
   function onLogoutACB() {
     logoutUser();
-    // userStore.clearUser() is called automatically via onAuthStateChanged in authRepo
   }
 
   function onNavigateToPlansACB() {

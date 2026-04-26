@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { userStore } from "../src/model/userStore";
 import { connectAuth } from "../src/persistence/authRepo";
 import { connectToPersistence } from "../src/persistence/planRepo";
+import { connectUserPrefsPersistence } from "../src/persistence/userPrefsRepo";
 import { GlobalToast } from "../src/views/common/GlobalToast";
 
 export default function RootLayout() {
@@ -15,15 +16,19 @@ export default function RootLayout() {
     //    This replaces the previous useEffect([userStore.uid]) approach,
     //    which caused an ESLint exhaustive-deps warning because MobX
     //    observables are not valid React hook dependencies.
-    let disconnectPersistence = null;
+    let disconnectPlanPersistence = null;
+    let disconnectUserPrefsPersistence = null;
 
     const stopUidReaction = reaction(
       () => userStore.uid,                     // data function: track uid
       (uid) => {                               // effect function: runs when uid changes
-        disconnectPersistence?.();              // clean up previous connection
-        disconnectPersistence = null;
+        disconnectPlanPersistence?.();
+        disconnectUserPrefsPersistence?.();
+        disconnectPlanPersistence = null;
+        disconnectUserPrefsPersistence = null;
         if (uid) {
-          disconnectPersistence = connectToPersistence(uid, reaction);
+          disconnectPlanPersistence = connectToPersistence(uid, reaction);
+          disconnectUserPrefsPersistence = connectUserPrefsPersistence(uid, reaction);
         }
       },
       { fireImmediately: true }                // run once at startup too
@@ -31,7 +36,8 @@ export default function RootLayout() {
 
     return function onCleanupACB() {
       stopUidReaction();
-      disconnectPersistence?.();
+      disconnectPlanPersistence?.();
+      disconnectUserPrefsPersistence?.();
     };
   }, []);
 

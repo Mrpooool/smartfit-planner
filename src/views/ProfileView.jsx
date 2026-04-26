@@ -5,7 +5,17 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CalendarView } from "./CalendarView";
 import { colors, radius, shadow, typography } from "../theme";
 
-export function ProfileView({ email, username, completedDates, workoutsByDate = {}, totalWorkouts, thisWeekCount, savedPlansCount, onNavigateToPlans, onLogout }) {
+export function ProfileView({
+  email,
+  username,
+  completedDates,
+  workoutsByDate = {},
+  totalWorkouts,
+  thisWeekCount,
+  savedPlansCount,
+  onNavigateToPlans,
+  onLogout,
+}) {
   const avatarLetter = username ? username[0].toUpperCase() : "?";
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
@@ -16,6 +26,31 @@ export function ProfileView({ email, username, completedDates, workoutsByDate = 
 
   function handleDatePress(day) {
     setSelectedDate(day.dateString);
+  }
+
+  function renderWorkoutCB(workout, workoutIndex) {
+    const exercises = workout.exercises || [];
+    const visibleExercises = exercises.slice(0, 5);
+
+    return (
+      <View key={workout.id || workoutIndex} style={styles.workoutBlock}>
+        <Text style={styles.workoutPlanName}>{workout.planName || "Workout"}</Text>
+        {visibleExercises.length > 0 ? (
+          visibleExercises.map(function renderExerciseCB(exercise, exerciseIndex) {
+            return (
+              <Text key={exercise.id || exerciseIndex} style={styles.workoutExercise}>
+                {exerciseIndex + 1}. {exercise.name || "Exercise"} - {exercise.sets || "-"} sets x {exercise.reps || "-"} reps
+              </Text>
+            );
+          })
+        ) : (
+          <Text style={styles.workoutDetailsEmpty}>No exercise details saved.</Text>
+        )}
+        {exercises.length > visibleExercises.length ? (
+          <Text style={styles.moreExercisesText}>+{exercises.length - visibleExercises.length} more exercises</Text>
+        ) : null}
+      </View>
+    );
   }
 
   return (
@@ -79,31 +114,6 @@ export function ProfileView({ email, username, completedDates, workoutsByDate = 
       </TouchableOpacity>
     </ScrollView>
   );
-
-  function renderWorkoutCB(workout, workoutIndex) {
-    const exercises = workout.exercises || [];
-    const visibleExercises = exercises.slice(0, 5);
-
-    return (
-      <View key={workout.id || workoutIndex} style={styles.workoutBlock}>
-        <Text style={styles.workoutPlanName}>{workout.planName || "Workout"}</Text>
-        {visibleExercises.length > 0 ? (
-          visibleExercises.map(function renderExerciseCB(exercise, exerciseIndex) {
-            return (
-              <Text key={exercise.id || exerciseIndex} style={styles.workoutExercise}>
-                {exerciseIndex + 1}. {exercise.name || "Exercise"} - {exercise.sets || "-"} sets x {exercise.reps || "-"} reps
-              </Text>
-            );
-          })
-        ) : (
-          <Text style={styles.workoutDetailsEmpty}>No exercise details saved.</Text>
-        )}
-        {exercises.length > visibleExercises.length ? (
-          <Text style={styles.moreExercisesText}>+{exercises.length - visibleExercises.length} more exercises</Text>
-        ) : null}
-      </View>
-    );
-  }
 }
 
 function formatDateLabel(dateString) {
@@ -259,7 +269,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 12,
-    marginTop: 4,
+    marginTop: 16,
   },
   sectionTitleCompact: {
     fontSize: 16,

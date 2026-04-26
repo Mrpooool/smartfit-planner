@@ -18,7 +18,6 @@ export function ExplorerView({
   onFilterChange,
   onImageModeChange,
   resultsContent,
-  // Modal props
   modalVisible,
   selectedExercise,
   savedPlans,
@@ -215,5 +214,4 @@ const styles = StyleSheet.create({
   resultsContainer: {
     flex: 1,
   },
-
 });
