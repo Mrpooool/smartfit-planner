@@ -57,6 +57,7 @@ beforeEach(() => {
   // Reset store state
   planStore.currentPlan = null;
   planStore.savedPlans = [];
+  planStore.workoutHistory = [];
   planStore.ready = true;
   mockRouterBack.mockClear();
   Alert.alert.mockClear();
@@ -106,6 +107,9 @@ describe("planStore actions used by PlanPresenter", () => {
     const today = "2026-03-23";
     planStore.markCompleted("plan-1", today);
     expect(planStore.savedPlans[0].completedDates).toContain(today);
+    expect(planStore.workoutHistory[0].date).toBe(today);
+    expect(planStore.workoutHistory[0].planName).toBe("Morning Workout");
+    expect(planStore.workoutHistory[0].exercises).toHaveLength(2);
   });
 
   test("markCompleted does nothing for non-existent plan", () => {
@@ -132,6 +136,20 @@ describe("planStore actions used by PlanPresenter", () => {
     // should not throw
     planStore.updateExerciseField(0, "sets", 5);
     expect(planStore.currentPlan).toBeNull();
+  });
+
+  test("removeExerciseFromCurrentPlan removes one exercise and syncs savedPlans", () => {
+    const savedPlan = { ...samplePlan, exercises: [...samplePlan.exercises] };
+    const currentPlan = { ...samplePlan, exercises: [...samplePlan.exercises] };
+    planStore.addSavedPlan(savedPlan);
+    planStore.setCurrentPlan(currentPlan);
+
+    planStore.removeExerciseFromCurrentPlan(0);
+
+    expect(planStore.currentPlan.exercises).toHaveLength(1);
+    expect(planStore.currentPlan.exercises[0].id).toBe("ex-2");
+    expect(planStore.savedPlans[0].exercises).toHaveLength(1);
+    expect(planStore.savedPlans[0].exercises[0].id).toBe("ex-2");
   });
 
   // ── renamePlan ──

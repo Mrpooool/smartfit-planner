@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { colors, radius, shadow } from "../theme";
 import { AddToPlanModal } from "./AddToPlanModal";
 
@@ -25,6 +26,8 @@ export function ExplorerView({
   onCreateNewPlan,
   onCloseModal,
 }) {
+  const insets = useSafeAreaInsets();
+
   function renderFilterChip(filterName) {
     const selected = filterName === activeFilter;
 
@@ -70,7 +73,7 @@ export function ExplorerView({
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top + 16 }]}>
       <Text style={styles.title}>Explore Exercises</Text>
 
       <TextInput

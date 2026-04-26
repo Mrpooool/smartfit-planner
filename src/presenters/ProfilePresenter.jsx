@@ -9,7 +9,12 @@ export default observer(function ProfilePresenter() {
   const router = useRouter();
 
   // Use completionHistory (independent of plan lifecycle) for stats
-  const allCompletedDates = getUniqueCompletedDates(planStore.completionHistory);
+  const allCompletedDates = getUniqueCompletedDates([
+    ...(planStore.completionHistory || []),
+    ...(planStore.workoutHistory || []).map(function mapWorkoutDateCB(workout) {
+      return workout.date;
+    }),
+  ]);
 
   function getUniqueCompletedDates(history) {
     return [...new Set(history || [])].sort();
@@ -34,12 +39,23 @@ export default observer(function ProfilePresenter() {
     router.replace("/(tabs)/plan");
   }
 
+  function getWorkoutsByDate() {
+    return (planStore.workoutHistory || []).reduce(function groupByDateCB(result, workout) {
+      if (!workout || !workout.date) return result;
+      return {
+        ...result,
+        [workout.date]: [...(result[workout.date] || []), workout],
+      };
+    }, {});
+  }
+
   return (
     <ProfileView
       savedPlans={planStore.savedPlans}
       email={userStore.email}
       username={userStore.username}
       completedDates={allCompletedDates}
+      workoutsByDate={getWorkoutsByDate()}
       totalWorkouts={allCompletedDates.length}
       thisWeekCount={getThisWeekCount()}
       savedPlansCount={planStore.savedPlans.length}

@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { colors, radius, shadow, typography } from "../theme";
 import { ExerciseImage } from "./common/ExerciseImage";
 
@@ -20,6 +21,7 @@ export function PlanView({
   onSavePlan,
   onMarkCompleted,
   onEditExercise,
+  onDeleteExercise,
   onPressExercise,
   onRenamePlan,
   onDeletePlan,
@@ -29,6 +31,8 @@ export function PlanView({
   onBack,
   previewMode = false,
 }) {
+  const insets = useSafeAreaInsets();
+
   if (!plan) {
     return (
       <View style={styles.emptyContainer}>
@@ -58,6 +62,16 @@ export function PlanView({
             Target: {exercise.targetMuscle}  |  Equipment: {exercise.equipment || "Bodyweight"}
           </Text>
         </TouchableOpacity>
+
+        {onDeleteExercise ? (
+          <TouchableOpacity
+            style={styles.exerciseDeleteButton}
+            onPress={function onExerciseDeletePressCB() { onDeleteExercise(index); }}
+          >
+            <Ionicons name="trash-outline" size={18} color={colors.error} style={{ marginRight: 6 }} />
+            <Text style={styles.exerciseDeleteText}>Delete Exercise</Text>
+          </TouchableOpacity>
+        ) : null}
 
         <View style={styles.setsRepsRow}>
           <View style={styles.fieldGroup}>
@@ -108,7 +122,7 @@ export function PlanView({
   const isCompletedToday = plan ? (plan.completedDates || []).includes(today) : false;
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.container} contentContainerStyle={[styles.content, { paddingTop: insets.top + 20 }]}>
       {onBack ? (
         <TouchableOpacity style={styles.backButton} onPress={onBack}>
           <Text style={styles.backButtonText}>← My Plans</Text>
@@ -238,6 +252,18 @@ const styles = StyleSheet.create({
   gif: { width: "100%", height: 200, borderRadius: radius.sm, marginBottom: 12 },
   exerciseName: { ...typography.cardTitle, color: colors.textPrimary },
   targetMuscle: { ...typography.label, color: colors.primary, marginTop: 2, marginBottom: 10 },
+  exerciseDeleteButton: {
+    alignSelf: "flex-start",
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderColor: colors.error,
+    marginBottom: 12,
+  },
+  exerciseDeleteText: { ...typography.label, color: colors.error },
   setsRepsRow: { flexDirection: "row", gap: 16, marginBottom: 10 },
   fieldGroup: { flex: 1 },
   fieldLabel: { ...typography.labelSm, color: colors.textSecondary, marginBottom: 4 },

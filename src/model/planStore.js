@@ -13,6 +13,9 @@ const model = {
   /** @type {string[]} All completion date strings, independent of plan lifecycle */
   completionHistory: [],
 
+  /** Workout snapshots grouped by completion date, independent of plan lifecycle */
+  workoutHistory: [],
+
   ready: false, // true once Firestore data is loaded
 
   setCurrentPlan: action(function setCurrentPlan(plan) {
@@ -40,6 +43,9 @@ const model = {
   }),
 
   markCompleted: action(function markCompleted(planId, date) {
+    const plan = findPlanById(this.savedPlans, planId) || (this.currentPlan && this.currentPlan.id === planId ? this.currentPlan : null);
+    if (!plan) return;
+
     // 1. Rebuild savedPlans array to trigger MobX observers reliably
     this.savedPlans = this.savedPlans.map(function mapPlanCB(p) {
       if (p.id === planId) {
@@ -58,10 +64,35 @@ const model = {
 
     // 3. Append to completionHistory (independent of plan lifecycle)
     this.completionHistory = [...this.completionHistory, date];
+
+    // 4. Store a lightweight snapshot so Profile calendar can explain what happened that day.
+    this.workoutHistory = [
+      ...this.workoutHistory,
+      {
+        id: planId + "-" + date + "-" + Date.now(),
+        date,
+        planId,
+        planName: plan.name || "Workout",
+        exercises: (plan.exercises || []).map(function mapExerciseCB(exercise) {
+          return {
+            id: exercise.id,
+            name: exercise.name,
+            sets: exercise.sets,
+            reps: exercise.reps,
+            targetMuscle: exercise.targetMuscle,
+            equipment: exercise.equipment,
+          };
+        }),
+      },
+    ];
   }),
 
   setCompletionHistory: action(function setCompletionHistory(history) {
     this.completionHistory = Array.isArray(history) ? history : [];
+  }),
+
+  setWorkoutHistory: action(function setWorkoutHistory(history) {
+    this.workoutHistory = Array.isArray(history) ? history : [];
   }),
 
   // Update a single field (e.g. "sets", "reps") on one exercise inside currentPlan
@@ -72,6 +103,21 @@ const model = {
     this.currentPlan = { ...this.currentPlan, exercises };
     
     // Auto-sync
+    const currentId = this.currentPlan.id;
+    this.savedPlans = this.savedPlans.map(function mapCB(p) {
+      return p.id === currentId ? { ...p, exercises: exercises } : p;
+    });
+  }),
+
+  removeExerciseFromCurrentPlan: action(function removeExerciseFromCurrentPlan(exerciseIndex) {
+    if (!this.currentPlan || !Array.isArray(this.currentPlan.exercises)) return;
+    if (exerciseIndex < 0 || exerciseIndex >= this.currentPlan.exercises.length) return;
+
+    const exercises = this.currentPlan.exercises.filter(function keepExerciseCB(_, index) {
+      return index !== exerciseIndex;
+    });
+    this.currentPlan = { ...this.currentPlan, exercises };
+
     const currentId = this.currentPlan.id;
     this.savedPlans = this.savedPlans.map(function mapCB(p) {
       return p.id === currentId ? { ...p, exercises: exercises } : p;
@@ -103,8 +149,8 @@ const model = {
   }),
 
   addExerciseToPlan: action(function addExerciseToPlan(planId, exercise) {
-    var targetPlan = null;
-    for (var i = 0; i < this.savedPlans.length; i++) {
+    let targetPlan = null;
+    for (let i = 0; i < this.savedPlans.length; i++) {
       if (this.savedPlans[i].id === planId) {
         targetPlan = this.savedPlans[i];
         break;
@@ -112,12 +158,12 @@ const model = {
     }
     if (!targetPlan) return "not_found";
 
-    var isDuplicate = (targetPlan.exercises || []).some(function matchCB(ex) {
+    const isDuplicate = (targetPlan.exercises || []).some(function matchCB(ex) {
       return ex.id === exercise.id;
     });
     if (isDuplicate) return "duplicate";
 
-    var updatedExercises = [...(targetPlan.exercises || []), exercise];
+    const updatedExercises = [...(targetPlan.exercises || []), exercise];
     this.savedPlans = this.savedPlans.map(function mapCB(p) {
       return p.id === planId ? { ...p, exercises: updatedExercises } : p;
     });
@@ -128,5 +174,15 @@ const model = {
     return "added";
   }),
 };
+
+function findPlanById(plans, planId) {
+  if (!Array.isArray(plans)) return null;
+  for (let i = 0; i < plans.length; i++) {
+    if (plans[i].id === planId) {
+      return plans[i];
+    }
+  }
+  return null;
+}
 
 export const planStore = observable(model);

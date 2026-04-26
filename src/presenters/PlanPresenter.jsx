@@ -7,6 +7,8 @@ import { uiStore } from "../model/uiStore";
 import { PlanView } from "../views/PlanView";
 import { PlanDirectoryView } from "../views/PlanDirectoryView";
 
+const MAX_EXERCISE_VALUE = 1000;
+
 export default observer(function PlanPresenter() {
   const router = useRouter();
   const [viewMode, setViewMode] = useState("directory"); // "directory" | "detail"
@@ -102,9 +104,39 @@ export default observer(function PlanPresenter() {
   }
 
   function onEditExerciseACB(exerciseIndex, field, value) {
-    var num = parseInt(value, 10);
+    let num = parseInt(value, 10);
     if (isNaN(num) || num < 0) return;
+    if (num > MAX_EXERCISE_VALUE) {
+      num = MAX_EXERCISE_VALUE;
+    }
     planStore.updateExerciseField(exerciseIndex, field, num);
+  }
+
+  function onDeleteExerciseACB(exerciseIndex) {
+    const plan = planStore.currentPlan;
+    if (!plan || !plan.exercises || !plan.exercises[exerciseIndex]) return;
+
+    function performDelete() {
+      planStore.removeExerciseFromCurrentPlan(exerciseIndex);
+    }
+
+    const exerciseName = plan.exercises[exerciseIndex].name || "this exercise";
+    if (Platform.OS === "web") {
+      setTimeout(function delayConfirmACB() {
+        if (window.confirm("Remove " + exerciseName + " from this plan?")) {
+          performDelete();
+        }
+      }, 0);
+    } else {
+      Alert.alert(
+        "Delete Exercise",
+        "Remove " + exerciseName + " from this plan?",
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Delete", style: "destructive", onPress: performDelete },
+        ]
+      );
+    }
   }
 
   function onRenamePlanACB(newName) {
@@ -151,6 +183,7 @@ export default observer(function PlanPresenter() {
         plan={planStore.currentPlan}
         onMarkCompleted={onMarkCompletedACB}
         onEditExercise={onEditExerciseACB}
+        onDeleteExercise={onDeleteExerciseACB}
         onPressExercise={onPressExerciseACB}
         onRenamePlan={onRenamePlanACB}
         onDeletePlan={onDeletePlanACB}

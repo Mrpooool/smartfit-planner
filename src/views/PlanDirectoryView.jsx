@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { colors, radius, shadow } from "../theme";
 
 /**
@@ -28,6 +29,7 @@ export function PlanDirectoryView({
   onDeletePlan,
   onCreateNewPlan,
 }) {
+  const insets = useSafeAreaInsets();
   const [showNewInput, setShowNewInput] = useState(false);
   const [newPlanName, setNewPlanName] = useState("");
 
@@ -85,7 +87,7 @@ export function PlanDirectoryView({
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top + 20 }]}>
       <Text style={styles.title}>My Plans</Text>
 
       {/* New plan input */}
