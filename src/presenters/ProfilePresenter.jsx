@@ -1,5 +1,6 @@
 import { observer } from "mobx-react-lite";
 import { useRouter } from "expo-router";
+import { Alert, Platform } from "react-native";
 import { planStore } from "../model/planStore";
 import { userStore } from "../model/userStore";
 import { logoutUser } from "../persistence/authRepo";
@@ -29,7 +30,26 @@ export default observer(function ProfilePresenter() {
   }
 
   function onLogoutACB() {
-    logoutUser();
+    function performLogout() {
+      logoutUser();
+    }
+
+    if (Platform.OS === "web") {
+      setTimeout(function delayConfirmACB() {
+        if (window.confirm("Are you sure you want to log out?")) {
+          performLogout();
+        }
+      }, 0);
+    } else {
+      Alert.alert(
+        "Logout",
+        "Are you sure you want to log out?",
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Logout", style: "destructive", onPress: performLogout },
+        ]
+      );
+    }
   }
 
   function onNavigateToPlansACB() {

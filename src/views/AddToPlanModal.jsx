@@ -36,6 +36,15 @@ export function AddToPlanModal({
     onSelectPlan(planId);
   }
 
+  function planHasExercise(plan) {
+    if (!plan || !exercise) return false;
+
+    const exerciseKey = getExerciseKey(exercise);
+    return (plan.exercises || []).some(function matchExerciseCB(planExercise) {
+      return getExerciseKey(planExercise) === exerciseKey;
+    });
+  }
+
   function handleCreatePress() {
     setShowNewPlanInput(true);
   }
@@ -61,19 +70,30 @@ export function AddToPlanModal({
 
   function renderPlanItem(info) {
     const plan = info.item;
+    const alreadyAdded = planHasExercise(plan);
+
     return (
       <TouchableOpacity
-        style={styles.planItem}
+        style={[styles.planItem, alreadyAdded && styles.planItemAdded]}
         onPress={function () { handleSelectPlan(plan.id); }}
+        disabled={alreadyAdded}
         activeOpacity={0.7}
       >
         <View style={styles.planItemLeft}>
-          <Text style={styles.planName}>{plan.name || "Untitled Plan"}</Text>
-          <Text style={styles.planMeta}>
+          <Text style={[styles.planName, alreadyAdded && styles.planNameAdded]}>
+            {plan.name || "Untitled Plan"}
+          </Text>
+          <Text style={[styles.planMeta, alreadyAdded && styles.planMetaAdded]}>
             {(plan.exercises || []).length} exercises
           </Text>
         </View>
-        <Text style={styles.arrow}>›</Text>
+        {alreadyAdded ? (
+          <View style={styles.addedBadge}>
+            <Text style={styles.addedBadgeText}>Added</Text>
+          </View>
+        ) : (
+          <Text style={styles.arrow}>›</Text>
+        )}
       </TouchableOpacity>
     );
   }
@@ -213,6 +233,10 @@ const styles = StyleSheet.create({
     padding: 14,
     marginBottom: 8,
   },
+  planItemAdded: {
+    backgroundColor: colors.disabled,
+    opacity: 0.72,
+  },
   planItemLeft: {
     flex: 1,
   },
@@ -222,14 +246,32 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     marginBottom: 2,
   },
+  planNameAdded: {
+    color: colors.textSecondary,
+  },
   planMeta: {
     fontSize: 12,
     color: colors.textSecondary,
+  },
+  planMetaAdded: {
+    color: colors.textTertiary,
   },
   arrow: {
     fontSize: 20,
     color: colors.textTertiary,
     marginLeft: 8,
+  },
+  addedBadge: {
+    backgroundColor: colors.card,
+    borderRadius: radius.pill,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    marginLeft: 8,
+  },
+  addedBadgeText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: colors.textSecondary,
   },
   emptyBox: {
     backgroundColor: colors.surface,
@@ -289,3 +331,7 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
   },
 });
+
+function getExerciseKey(item) {
+  return String(item?.exerciseDbId || item?.exerciseId || item?.id || "");
+}
