@@ -58,6 +58,9 @@ jest.mock("../../model/planStore", () => {
   const store = observable({
     savedPlans: [],
     completionHistory: [],
+    workoutHistory: [],
+    currentPlan: null,
+    generatedPlan: null,
     ready: false,
   });
   return { planStore: store };
@@ -86,6 +89,9 @@ beforeEach(() => {
   mockSnapshotError = undefined;
   planStore.savedPlans = [];
   planStore.completionHistory = [];
+  planStore.workoutHistory = [];
+  planStore.currentPlan = null;
+  planStore.generatedPlan = null;
   planStore.ready = false;
   jest.clearAllMocks();
 });
@@ -161,6 +167,8 @@ describe("connectToPersistence", () => {
     mockSnapshotError(new Error("Network error"));
 
     expect(planStore.savedPlans).toEqual([]);
+    expect(planStore.completionHistory).toEqual([]);
+    expect(planStore.workoutHistory).toEqual([]);
     expect(planStore.ready).toBe(true);
     consoleSpy.mockRestore();
   });
@@ -231,6 +239,7 @@ describe("connectToPersistence", () => {
         exercises: [{ exerciseId: "123", sets: 4, reps: 12 }],
       }],
       completionHistory: [],
+      workoutHistory: [],
     });
   });
 });

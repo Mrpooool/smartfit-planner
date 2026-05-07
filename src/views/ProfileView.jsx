@@ -13,6 +13,8 @@ export function ProfileView({
   totalWorkouts,
   thisWeekCount,
   savedPlansCount,
+  showAnimatedListImages,
+  onImageModeChange,
   onNavigateToPlans,
   onLogout,
 }) {
@@ -26,6 +28,26 @@ export function ProfileView({
 
   function handleDatePress(day) {
     setSelectedDate(day.dateString);
+  }
+
+  function renderImageModeButton(useAnimatedImages, label, hint) {
+    const selected = Boolean(showAnimatedListImages) === useAnimatedImages;
+
+    function handlePress() {
+      if (onImageModeChange) {
+        onImageModeChange(useAnimatedImages);
+      }
+    }
+
+    return (
+      <TouchableOpacity
+        style={[styles.imageModeButton, selected && styles.imageModeButtonActive]}
+        onPress={handlePress}
+      >
+        <Text style={[styles.imageModeLabel, selected && styles.imageModeLabelActive]}>{label}</Text>
+        <Text style={[styles.imageModeHint, selected && styles.imageModeHintActive]}>{hint}</Text>
+      </TouchableOpacity>
+    );
   }
 
   function renderWorkoutCB(workout, workoutIndex) {
@@ -95,6 +117,20 @@ export function ProfileView({
         selectedDate={selectedDate}
         onDatePress={handleDatePress}
       />
+
+      <Text style={[styles.sectionTitle, isCompact && styles.sectionTitleCompact]}>Exercise Preview</Text>
+      <View style={[styles.imageModeRow, isCompact && styles.imageModeRowCompact]}>
+        {renderImageModeButton(
+          false,
+          "Data Saver",
+          "Use lightweight previews to save mobile data and run more smoothly on lower-end phones"
+        )}
+        {renderImageModeButton(
+          true,
+          "Motion Preview",
+          "Show animated thumbnails for the richest browsing experience when network conditions are good"
+        )}
+      </View>
 
       {selectedDate ? (
         <View style={styles.workoutDetailsCard}>
@@ -275,6 +311,44 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 8,
     marginTop: 0,
+  },
+  imageModeRow: {
+    flexDirection: "row",
+    gap: 10,
+    marginBottom: 16,
+  },
+  imageModeRowCompact: {
+    flexDirection: "column",
+  },
+  imageModeButton: {
+    flex: 1,
+    backgroundColor: colors.surface,
+    borderRadius: radius.md,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...shadow.sm,
+  },
+  imageModeButtonActive: {
+    borderColor: colors.primary,
+    backgroundColor: colors.primaryLight,
+  },
+  imageModeLabel: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: colors.textPrimary,
+    marginBottom: 4,
+  },
+  imageModeLabelActive: {
+    color: colors.primaryDark,
+  },
+  imageModeHint: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    lineHeight: 16,
+  },
+  imageModeHintActive: {
+    color: colors.primaryDark,
   },
   workoutDetailsCard: {
     backgroundColor: colors.card,

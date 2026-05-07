@@ -80,18 +80,6 @@ export default observer(function ExplorerPresenter() {
     setSelectedExercise(null);
   }
 
-  function onImageModeChangeACB(useAnimatedImages) {
-    if (Boolean(userStore.showAnimatedListImages) === Boolean(useAnimatedImages)) {
-      return;
-    }
-
-    userStore.setShowAnimatedListImages(useAnimatedImages);
-    uiStore.showToast(
-      useAnimatedImages ? "Motion preview enabled." : "Data saver preview enabled.",
-      "success"
-    );
-  }
-
   function fetchExercisesByFilter(muscle) {
     const resolvedMuscle = resolveApiMuscle(muscle);
 
@@ -192,10 +180,8 @@ export default observer(function ExplorerPresenter() {
       searchQuery={searchQuery}
       filters={FILTERS}
       activeFilter={activeFilter}
-      showAnimatedListImages={userStore.showAnimatedListImages}
       onSearch={onSearchACB}
       onFilterChange={onFilterChangeACB}
-      onImageModeChange={onImageModeChangeACB}
       resultsContent={renderResultsContent()}
       modalVisible={modalVisible}
       selectedExercise={selectedExercise}
