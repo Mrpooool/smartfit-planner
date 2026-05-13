@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import {
   View,
   Text,
@@ -49,12 +50,16 @@ export function ExplorerView({
     <View style={[styles.container, { paddingTop: insets.top + 16 }]}>
       <Text style={styles.title}>Explore Exercises</Text>
 
-      <TextInput
-        value={searchQuery}
-        onChangeText={onSearch}
-        placeholder="Search exercise"
-        style={styles.searchInput}
-      />
+      <View style={styles.searchContainer}>
+        <Ionicons name="search" size={18} color={colors.textTertiary} style={styles.searchIcon} />
+        <TextInput
+          value={searchQuery}
+          onChangeText={onSearch}
+          placeholder="Search exercise..."
+          placeholderTextColor={colors.textTertiary}
+          style={styles.searchInput}
+        />
+      </View>
 
       <Text style={styles.sectionTitle}>Filters</Text>
       <View style={styles.filterRow}>{filters.map(renderFilterChip)}</View>
@@ -97,13 +102,25 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 16,
   },
-  searchInput: {
-    borderWidth: 1,
-    borderColor: colors.border,
+  searchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1.5,
+    borderColor: colors.borderLight,
     backgroundColor: colors.card,
-    borderRadius: radius.sm,
-    padding: 10,
+    borderRadius: radius.md,
+    paddingHorizontal: 12,
     marginBottom: 16,
+    ...shadow.sm,
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    paddingVertical: 12,
+    fontSize: 15,
+    color: colors.textPrimary,
   },
   sectionTitle: {
     fontSize: 16,

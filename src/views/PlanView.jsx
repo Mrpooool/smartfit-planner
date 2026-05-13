@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useState } from "react";
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { colors, radius, shadow, typography } from "../theme";
@@ -32,6 +33,14 @@ export function PlanView({
   previewMode = false,
 }) {
   const insets = useSafeAreaInsets();
+  // Track which exercise indices have expanded instructions
+  const [expandedInstructions, setExpandedInstructions] = useState({});
+
+  function toggleInstructions(index) {
+    setExpandedInstructions(function toggleCB(prev) {
+      return { ...prev, [index]: !prev[index] };
+    });
+  }
 
   if (!plan) {
     return (
@@ -49,6 +58,9 @@ export function PlanView({
   }
 
   function renderExerciseCB(exercise, index) {
+    const hasInstructions = exercise.instructions && (Array.isArray(exercise.instructions) ? exercise.instructions.length > 0 : exercise.instructions.length > 0);
+    const isExpanded = Boolean(expandedInstructions[index]);
+
     return (
       <View key={exercise.id || index} style={styles.exerciseCard}>
         <TouchableOpacity activeOpacity={0.7} onPress={function onExercisePressCB() { onPressExercise(index); }}>
@@ -98,20 +110,35 @@ export function PlanView({
           </View>
         </View>
 
-        {exercise.instructions && (Array.isArray(exercise.instructions) ? exercise.instructions.length > 0 : exercise.instructions.length > 0) ? (
+        {hasInstructions ? (
           <View style={styles.instructionsBox}>
-            <Text style={styles.instructionsTitle}>Instructions</Text>
-            {Array.isArray(exercise.instructions) ? (
-              exercise.instructions.map(function renderStepCB(step, i) {
-                return (
-                  <Text key={i} style={styles.instructions}>
-                    {i + 1}. {step}
-                  </Text>
-                );
-              })
-            ) : (
-              <Text style={styles.instructions}>{exercise.instructions}</Text>
-            )}
+            <TouchableOpacity
+              style={styles.instructionsHeader}
+              onPress={function toggleInstructionsCB() { toggleInstructions(index); }}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.instructionsTitle}>Instructions</Text>
+              <Ionicons
+                name={isExpanded ? "chevron-up" : "chevron-down"}
+                size={18}
+                color={colors.textSecondary}
+              />
+            </TouchableOpacity>
+            {isExpanded ? (
+              <View style={styles.instructionsContent}>
+                {Array.isArray(exercise.instructions) ? (
+                  exercise.instructions.map(function renderStepCB(step, i) {
+                    return (
+                      <Text key={i} style={styles.instructions}>
+                        {i + 1}. {step}
+                      </Text>
+                    );
+                  })
+                ) : (
+                  <Text style={styles.instructions}>{exercise.instructions}</Text>
+                )}
+              </View>
+            ) : null}
           </View>
         ) : null}
       </View>
@@ -203,14 +230,19 @@ export function PlanView({
                 styles.actionButtonText,
                 isCompletedToday ? styles.secondaryButtonText : styles.inverseButtonText,
               ]}
+              numberOfLines={1}
             >
-              {isCompletedToday ? "✅  COMPLETED TODAY" : "✅  MARK AS COMPLETED"}
+              {isCompletedToday ? "✅ COMPLETED" : "✅ MARK COMPLETED"}
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={[styles.actionButton, styles.deleteButton]} onPress={onDeletePlan}>
-            <Ionicons name="remove-circle-outline" size={20} color={colors.error} style={{ marginRight: 6 }} />
-            <Text style={[styles.actionButtonText, styles.deleteButtonText]}>Delete Plan</Text>
+          <TouchableOpacity
+            style={[styles.actionButton, styles.dangerButton]}
+            onPress={onDeletePlan}
+          >
+            <Text style={[styles.actionButtonText, styles.deleteButtonText]}>
+              🗑  DELETE PLAN
+            </Text>
           </TouchableOpacity>
         </>
       )}
@@ -276,8 +308,22 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     textAlign: "center",
   },
-  instructionsBox: { marginTop: 8, paddingTop: 8, borderTopWidth: 1, borderTopColor: colors.border },
-  instructionsTitle: { ...typography.label, color: colors.textSecondary, marginBottom: 4 },
+  instructionsBox: {
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  instructionsHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 4,
+  },
+  instructionsTitle: { ...typography.label, color: colors.textSecondary },
+  instructionsContent: {
+    marginTop: 8,
+  },
   instructions: { fontSize: 13, color: colors.textMuted, lineHeight: 18, marginTop: 4 },
   actionButton: {
     padding: 16,
@@ -320,4 +366,9 @@ const styles = StyleSheet.create({
   secondaryButtonText: { color: colors.textSecondary },
   mutedButtonText: { color: colors.disabledText },
   deleteButtonText: { color: colors.error },
+  dangerButton: {
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: colors.error,
+  },
 });

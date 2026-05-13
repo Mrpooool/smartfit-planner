@@ -1,9 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
-import { ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from "react-native";
+import { Modal, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CalendarView } from "./CalendarView";
 import { colors, radius, shadow, typography } from "../theme";
+import { uiStore } from "../model/uiStore";
 
 export function ProfileView({
   email,
@@ -17,12 +18,29 @@ export function ProfileView({
   onImageModeChange,
   onNavigateToPlans,
   onLogout,
+  logoutModalVisible = false,
+  onConfirmLogout,
+  onCancelLogout,
+  onUpdateUsername,
+  todayWorkoutSeconds = 0,
+  totalWorkoutSeconds = 0,
+  workoutTimeLog = {},
 }) {
   const avatarLetter = username ? username[0].toUpperCase() : "?";
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const isCompact = width < 720;
-  const [selectedDate, setSelectedDate] = useState(null);
+
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    return year + "-" + month + "-" + day;
+  });
+
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editName, setEditName] = useState(username || "");
   const selectedWorkouts = selectedDate ? (workoutsByDate[selectedDate] || []) : [];
   const hasCompletedDate = selectedDate ? (completedDates || []).includes(selectedDate) : false;
 
@@ -83,7 +101,32 @@ export function ProfileView({
             <Text style={[styles.avatarText, isCompact && styles.avatarTextCompact]}>{avatarLetter}</Text>
           </View>
           <View style={styles.userTextBlock}>
-            <Text style={[styles.username, isCompact && styles.usernameCompact]}>{username}</Text>
+            {isEditingName ? (
+              <View style={styles.editNameRow}>
+                <TextInput
+                  style={[styles.username, isCompact && styles.usernameCompact, styles.editNameInput]}
+                  value={editName}
+                  onChangeText={setEditName}
+                  autoFocus={true}
+                  onSubmitEditing={function saveNameACB() {
+                    if (editName.trim() && onUpdateUsername) {
+                      onUpdateUsername(editName.trim());
+                    }
+                    setIsEditingName(false);
+                  }}
+                  onBlur={function cancelEditACB() { setIsEditingName(false); }}
+                />
+              </View>
+            ) : (
+              <TouchableOpacity
+                style={styles.editNameRow}
+                onPress={function startEditACB() { setEditName(username || ""); setIsEditingName(true); }}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.username, isCompact && styles.usernameCompact, { marginBottom: 0 }]}>{username}</Text>
+                <Ionicons name="pencil-outline" size={14} color={colors.textTertiary} style={{ marginLeft: 4, marginTop: 2 }} />
+              </TouchableOpacity>
+            )}
             <Text style={[styles.email, isCompact && styles.emailCompact]}>{email}</Text>
           </View>
         </View>
@@ -100,13 +143,20 @@ export function ProfileView({
             </View>
           </View>
 
-          <TouchableOpacity style={[styles.savedPlansButton, isCompact && styles.savedPlansButtonCompact]} onPress={onNavigateToPlans}>
-            <View>
-              <Text style={[styles.savedPlansNumber, isCompact && styles.savedPlansNumberCompact]}>{savedPlansCount}</Text>
-              <Text style={[styles.savedPlansLabel, isCompact && styles.savedPlansLabelCompact]}>Saved Plans</Text>
+          <View style={styles.statsRow}>
+            <TouchableOpacity style={[styles.statCard, styles.statCardSmall, isCompact && styles.statCardCompact]} onPress={onNavigateToPlans}>
+              <Text style={styles.statNumberSmall}>{savedPlansCount}</Text>
+              <Text style={styles.statLabelSmall}>Saved Plans</Text>
+            </TouchableOpacity>
+            <View style={[styles.statCard, styles.statCardSmall, isCompact && styles.statCardCompact]}>
+              <Text style={styles.statNumberSmall}>{formatDuration(todayWorkoutSeconds)}</Text>
+              <Text style={styles.statLabelSmall}>Today</Text>
             </View>
-            <Ionicons name="chevron-forward" size={22} color={colors.primary} />
-          </TouchableOpacity>
+            <View style={[styles.statCard, styles.statCardSmall, isCompact && styles.statCardCompact]}>
+              <Text style={styles.statNumberSmall}>{formatDuration(totalWorkoutSeconds)}</Text>
+              <Text style={styles.statLabelSmall}>Total Time</Text>
+            </View>
+          </View>
         </View>
       </View>
 
@@ -116,6 +166,7 @@ export function ProfileView({
         compact={isCompact}
         selectedDate={selectedDate}
         onDatePress={handleDatePress}
+        workoutTimeLog={workoutTimeLog}
       />
 
       <Text style={[styles.sectionTitle, isCompact && styles.sectionTitleCompact]}>Exercise Preview</Text>
@@ -145,9 +196,47 @@ export function ProfileView({
         </View>
       ) : null}
 
+      <View style={styles.darkModeRow}>
+        <View style={styles.darkModeInfo}>
+          <Ionicons name="moon-outline" size={20} color={colors.textSecondary} />
+          <Text style={styles.darkModeLabel}>Dark Mode</Text>
+        </View>
+        <Switch
+          value={false}
+          onValueChange={function toggleDarkACB() {
+            uiStore.showToast("Dark mode is coming in a future update!", "info");
+          }}
+          trackColor={{ false: colors.border, true: colors.primary }}
+          thumbColor={colors.card}
+        />
+      </View>
+
       <TouchableOpacity style={styles.logoutButton} onPress={onLogout}>
         <Text style={styles.logoutText}>Logout</Text>
       </TouchableOpacity>
+
+      <Modal
+        visible={logoutModalVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={onCancelLogout}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <Ionicons name="log-out-outline" size={36} color={colors.error} style={styles.modalIcon} />
+            <Text style={styles.modalTitle}>Logout</Text>
+            <Text style={styles.modalMessage}>Are you sure you want to log out?</Text>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity style={styles.modalCancelButton} onPress={onCancelLogout}>
+                <Text style={styles.modalCancelText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.modalConfirmButton} onPress={onConfirmLogout}>
+                <Text style={styles.modalConfirmText}>Logout</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -159,6 +248,14 @@ function formatDateLabel(dateString) {
     day: "numeric",
     year: "numeric",
   });
+}
+
+function formatDuration(totalSeconds) {
+  if (!totalSeconds || totalSeconds <= 0) return "0m";
+  const hours = Math.floor(totalSeconds / 3600);
+  const mins = Math.floor((totalSeconds % 3600) / 60);
+  if (hours > 0) return hours + "h " + mins + "m";
+  return mins + "m";
 }
 
 const styles = StyleSheet.create({
@@ -211,6 +308,19 @@ const styles = StyleSheet.create({
   },
   userTextBlock: {
     flex: 1,
+  },
+  editNameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    marginBottom: 4,
+  },
+  editNameInput: {
+    flex: 1,
+    borderBottomWidth: 2,
+    borderBottomColor: colors.primary,
+    paddingVertical: 2,
+    marginBottom: 4,
   },
   username: {
     ...typography.inputTitle,
@@ -268,6 +378,23 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textAlign: "center",
     lineHeight: 16,
+  },
+  statCardSmall: {
+    paddingTop: 12,
+    paddingBottom: 4,
+    paddingHorizontal: 8,
+  },
+  statNumberSmall: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: colors.primary,
+    marginBottom: 2,
+    textAlign: "center",
+  },
+  statLabelSmall: {
+    fontSize: 11,
+    color: colors.textSecondary,
+    textAlign: "center",
   },
   savedPlansButton: {
     flexDirection: "row",
@@ -390,6 +517,26 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
 
+  darkModeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: colors.card,
+    borderRadius: radius.md,
+    padding: 16,
+    marginTop: 16,
+    marginBottom: 8,
+    ...shadow.sm,
+  },
+  darkModeInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  darkModeLabel: {
+    ...typography.bodySemibold,
+    color: colors.textPrimary,
+  },
   logoutButton: {
     marginTop: 4,
     padding: 12,
@@ -400,5 +547,65 @@ const styles = StyleSheet.create({
   logoutText: {
     color: colors.card,
     fontWeight: "bold",
+  },
+
+  // Custom Logout Modal
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: colors.overlay,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 40,
+  },
+  modalCard: {
+    backgroundColor: colors.card,
+    borderRadius: radius.lg,
+    padding: 28,
+    width: "100%",
+    maxWidth: 320,
+    alignItems: "center",
+    ...shadow.md,
+  },
+  modalIcon: {
+    marginBottom: 12,
+  },
+  modalTitle: {
+    ...typography.inputTitle,
+    color: colors.textPrimary,
+    marginBottom: 8,
+  },
+  modalMessage: {
+    ...typography.body,
+    color: colors.textSecondary,
+    textAlign: "center",
+    marginBottom: 24,
+    lineHeight: 22,
+  },
+  modalButtons: {
+    flexDirection: "row",
+    gap: 12,
+    width: "100%",
+  },
+  modalCancelButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: radius.md,
+    backgroundColor: colors.surface,
+    alignItems: "center",
+  },
+  modalCancelText: {
+    ...typography.button,
+    color: colors.textMuted,
+  },
+  modalConfirmButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: radius.md,
+    backgroundColor: colors.error,
+    alignItems: "center",
+  },
+  modalConfirmText: {
+    ...typography.button,
+    color: colors.card,
   },
 });

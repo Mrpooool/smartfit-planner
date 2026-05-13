@@ -21,6 +21,7 @@ export function connectToPersistence(uid, watchFunction) {
     const remotePlans = await hydrateRemotePlans(Array.isArray(data.savedPlans) ? data.savedPlans : []);
     const remoteHistory = Array.isArray(data.completionHistory) ? data.completionHistory : [];
     const remoteWorkoutHistory = Array.isArray(data.workoutHistory) ? data.workoutHistory : [];
+    const remoteWorkoutTimeLog = (data.workoutTimeLog && typeof data.workoutTimeLog === "object") ? data.workoutTimeLog : {};
 
     if (isSaving) {
       console.log("[planRepo] Skip snapshot: save in-flight");
@@ -32,6 +33,7 @@ export function connectToPersistence(uid, watchFunction) {
       planStore.savedPlans = remotePlans;
       planStore.completionHistory = remoteHistory;
       planStore.workoutHistory = remoteWorkoutHistory;
+      planStore.workoutTimeLog = remoteWorkoutTimeLog;
       planStore.ready = true;
       setTimeout(function resetSkipFlagACB() {
         skipNextReaction = false;
@@ -78,6 +80,7 @@ export function connectToPersistence(uid, watchFunction) {
       savedPlans: serializePlansForPersistence(planStore.savedPlans),
       completionHistory: planStore.completionHistory,
       workoutHistory: planStore.workoutHistory,
+      workoutTimeLog: planStore.workoutTimeLog,
     });
   }
 
@@ -96,11 +99,13 @@ export function connectToPersistence(uid, watchFunction) {
       const safePlans = serializePlansForPersistence(planStore.savedPlans);
       const safeHistory = JSON.parse(JSON.stringify(planStore.completionHistory));
       const safeWorkoutHistory = JSON.parse(JSON.stringify(planStore.workoutHistory));
+      const safeWorkoutTimeLog = JSON.parse(JSON.stringify(planStore.workoutTimeLog || {}));
       console.log("[planRepo] Saving", safePlans.length, "plans +", safeHistory.length, "history entries to Firestore...");
       await setDoc(docRef, {
         savedPlans: safePlans,
         completionHistory: safeHistory,
         workoutHistory: safeWorkoutHistory,
+        workoutTimeLog: safeWorkoutTimeLog,
       });
       console.log("[planRepo] Saved successfully");
     } catch (err) {
@@ -134,6 +139,10 @@ function serializeExercisesForPersistence(exercises) {
 
       return {
         exerciseId: exerciseId,
+        name: String(exercise?.name || ""),
+        targetMuscle: String(exercise?.targetMuscle || exercise?.target || ""),
+        bodyPart: String(exercise?.bodyPart || ""),
+        equipment: String(exercise?.equipment || ""),
         sets: sanitizeExerciseNumber(exercise?.sets),
         reps: sanitizeExerciseNumber(exercise?.reps),
       };
@@ -176,7 +185,7 @@ async function hydrateExercises(exercises) {
         return {
           id: exerciseId,
           exerciseDbId: exerciseId,
-          name: String(exercise?.name || "Exercise unavailable"),
+          name: String(exercise?.name || "Exercise"),
           searchName: String(exercise?.searchName || exercise?.name || ""),
           targetMuscle: String(exercise?.targetMuscle || exercise?.target || "Unknown"),
           bodyPart: String(exercise?.bodyPart || ""),

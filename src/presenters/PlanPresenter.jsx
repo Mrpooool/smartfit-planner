@@ -1,6 +1,6 @@
 import { observer } from "mobx-react-lite";
-import { useState } from "react";
-import { Alert, Platform } from "react-native";
+import { useEffect, useState } from "react";
+import { Alert, BackHandler, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import { planStore } from "../model/planStore";
 import { uiStore } from "../model/uiStore";
@@ -12,6 +12,18 @@ const MAX_EXERCISE_VALUE = 1000;
 export default observer(function PlanPresenter() {
   const router = useRouter();
   const [viewMode, setViewMode] = useState("directory"); // "directory" | "detail"
+
+  useEffect(function backHandlerEffectACB() {
+    function onBackPressACB() {
+      if (viewMode === "detail") {
+        setViewMode("directory");
+        return true; // prevent default behavior
+      }
+      return false; // let default behavior happen
+    }
+    const subscription = BackHandler.addEventListener("hardwareBackPress", onBackPressACB);
+    return function cleanupACB() { subscription.remove(); };
+  }, [viewMode]);
 
   // ── Directory handlers ──
 

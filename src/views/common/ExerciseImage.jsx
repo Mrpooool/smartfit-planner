@@ -1,4 +1,4 @@
-﻿import { Ionicons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useEffect, useState } from "react";
@@ -24,7 +24,7 @@ export function ExerciseImage({
   // 占位卡片的配色和图标会根据动作肌群做一个简单映射。
   const placeholderTheme = getPlaceholderTheme(exercise);
   const title = formatDisplayLabel(exercise?.targetMuscle || exercise?.bodyPart || "Exercise");
-  const subtitle = formatDisplayLabel(exercise?.equipment || "Demo unavailable");
+  const subtitle = formatDisplayLabel(exercise?.equipment || "");
 
   useEffect(function resetImageSourceACB() {
     // 切换到新动作时，重置回第一个图源，避免沿用上一个动作的失败状态。

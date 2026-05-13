@@ -29,7 +29,9 @@ export default observer(function ForgotPasswordPresenter() {
       router.replace("/login");
     } catch (err) {
       console.log("Reset password error:", err);
-     
+      const errMsg = getResetPasswordErrorMessage(err.code);
+      setError(errMsg);
+      uiStore.showToast(errMsg, "error");
     } finally {
       setIsLoading(false);
     }

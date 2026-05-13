@@ -1,4 +1,3 @@
-import { Picker } from "@react-native-picker/picker";
 import { LinearGradient } from "expo-linear-gradient";
 import { ImageBackground, Platform, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { colors, radius } from "../theme";
@@ -8,29 +7,42 @@ const heroImage = require("../../assets/images/StockCake-Dance_Through_Light-153
 // 宽屏图，专用于 Web 横排布局
 const heroImageWeb = require("../../assets/images/StockCake-Strength_Meets_Grace-1515373-medium.jpg");
 
-export function GeneratorView(props) {
+const MUSCLE_OPTIONS = [
+  { label: "Full Body", value: "full body" },
+  { label: "Chest", value: "chest" },
+  { label: "Back", value: "back" },
+  { label: "Legs", value: "legs" },
+  { label: "Arms", value: "arms" },
+  { label: "Shoulders", value: "shoulders" },
+  { label: "Core", value: "core" },
+];
 
-  // 动态获取屏幕高度，使 Hero 在不同设备上保持同一比例
-  const { height } = useWindowDimensions();
+const LEVEL_OPTIONS = [
+  { label: "Beginner", value: "beginner" },
+  { label: "Mid", value: "intermediate" },
+  { label: "Advanced", value: "advanced" },
+];
+
+function capitalize(str) {
+  if (!str) return "";
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+export function GeneratorView(props) {
+  const { height, width } = useWindowDimensions();
   const isLoading = Boolean(props.promise) && !props.data && !props.error;
+  // On narrow screens, use 2-column grid for time buttons
+  const isNarrow = width < 400;
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
 
       {/* ── Hero Banner ─────────────────────────────────────────────────── */}
-      {/*
-        Web 用横版图，Mobile 用竖版图，布局完全一致：
-          ImageBackground  → 图片铺满，作为最底层背景
-            LinearGradient → 渐变蒙层：顶部透明 → 底部深黑，保证文字可读
-              Text ×3      → 问候 / 标题 / 副标题，锚定在蒙层底部
-      */}
       <ImageBackground
         source={Platform.OS === "web" ? heroImageWeb : heroImage}
-        // 高度 = 屏幕高度 × 44%，cover 模式让图片不变形地填满区域
-        style={[styles.hero, { height: Math.round(height * 0.44) }]}
+        style={[styles.hero, { height: Math.round(height * 0.28) }]}
         resizeMode="cover"
       >
-        {/* 三段式渐变：透明 → 半透明(0.38) → 深色(0.74)，过渡更自然 */}
         <LinearGradient
           colors={["transparent", colors.heroScrimMid, colors.heroScrimStrong]}
           style={styles.heroGradient}
@@ -46,47 +58,82 @@ export function GeneratorView(props) {
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Workout Time</Text>
-        <View style={styles.row}>
-          {[15, 30, 60].map(renderDurationOptionCB)}
+        <View style={styles.gridRow}>
+          {[15, 30, 60].map(function renderDurationCB(duration) {
+            const selected = props.duration === duration;
+            return (
+              <Pressable
+                key={duration}
+                role="button"
+                onPress={function chooseTimeACB() { props.onParamChange("duration", duration); }}
+                style={[styles.gridChip, selected && styles.gridChipSelected]}
+              >
+                <Text style={selected ? styles.gridChipTextSelected : styles.gridChipText}>{duration} mins</Text>
+              </Pressable>
+            );
+          })}
         </View>
       </View>
+
+      <View style={styles.divider} />
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Equipment</Text>
-        <View style={styles.row}>
-          {["none", "dumbbells", "bands", "full gym"].map(renderEquipOptionCB)}
+        <View style={styles.equipGrid}>
+          {["none", "dumbbells", "bands", "full gym"].map(function renderEquipCB(equipment) {
+            const selected = props.equipment.includes(equipment);
+            return (
+              <Pressable
+                key={equipment}
+                role="button"
+                onPress={function chooseEquipACB() { props.onParamChange("equipment", equipment); }}
+                style={[styles.equipChip, selected && styles.equipChipSelected]}
+              >
+                <Text style={selected ? styles.equipChipTextSelected : styles.equipChipText}>{capitalize(equipment)}</Text>
+              </Pressable>
+            );
+          })}
         </View>
       </View>
+
+      <View style={styles.divider} />
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Target Muscle Group</Text>
-        <View style={styles.pickerWrapper}>
-          <Picker
-            selectedValue={props.targetMuscle}
-            onValueChange={chooseTargetMuscleACB}
-          >
-            <Picker.Item label="Full Body" value="full body" />
-            <Picker.Item label="Chest" value="chest" />
-            <Picker.Item label="Back" value="back" />
-            <Picker.Item label="Legs" value="legs" />
-            <Picker.Item label="Arms" value="arms" />
-            <Picker.Item label="Shoulders" value="shoulders" />
-            <Picker.Item label="Core" value="core" />
-          </Picker>
-        </View>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll} contentContainerStyle={styles.chipScrollContent}>
+          {MUSCLE_OPTIONS.map(function renderMuscleCB(option) {
+            const muscleArr = Array.isArray(props.targetMuscle) ? props.targetMuscle : [props.targetMuscle];
+            const selected = muscleArr.includes(option.value);
+            return (
+              <Pressable
+                key={option.value}
+                onPress={function chooseMuscleACB() { props.onParamChange("targetMuscle", option.value); }}
+                style={[styles.chip, selected && styles.chipSelected]}
+              >
+                <Text style={selected ? styles.chipTextSelected : styles.chipText}>{option.label}</Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
       </View>
+
+      <View style={styles.divider} />
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Experience Level</Text>
-        <View style={styles.pickerWrapper}>
-          <Picker
-            selectedValue={props.experienceLevel}
-            onValueChange={chooseExperienceLevelACB}
-          >
-            <Picker.Item label="Beginner" value="beginner" />
-            <Picker.Item label="Intermediate" value="intermediate" />
-            <Picker.Item label="Advanced" value="advanced" />
-          </Picker>
+        <View style={styles.gridRow}>
+          {LEVEL_OPTIONS.map(function renderLevelCB(option) {
+            const selected = props.experienceLevel === option.value;
+            return (
+              <Pressable
+                key={option.value}
+                onPress={function chooseLevelACB() { props.onParamChange("experienceLevel", option.value); }}
+                style={[styles.gridChip, selected && styles.gridChipSelected]}
+              >
+                <Text style={selected ? styles.gridChipTextSelected : styles.gridChipText}>{option.label}</Text>
+              </Pressable>
+            );
+          })}
         </View>
       </View>
 
@@ -97,59 +144,17 @@ export function GeneratorView(props) {
 
       <Pressable
         role="button"
-        style={isLoading ? styles.disabledButton : styles.button}
+        style={isLoading ? styles.disabledButton : styles.generateButton}
         onPress={props.onGenerate}
         disabled={isLoading}
       >
-        <Text style={styles.buttonText}>
+        <Text style={styles.generateButtonText}>
           {isLoading ? "Generating..." : "🟩 GENERATE SMART PLAN"}
         </Text>
       </Pressable>
       </View>
     </ScrollView>
   );
-
-  function renderDurationOptionCB(duration) {
-    return (
-      <Pressable
-        key={duration}
-        role="button"
-        onPress={chooseTimeACB}
-        style={props.duration === duration ? styles.selectedButton : styles.button}
-      >
-        <Text style={styles.buttonText}>{duration} mins</Text>
-      </Pressable>
-    );
-
-    function chooseTimeACB() {
-      props.onParamChange("duration", duration);
-    }
-  }
-
-  function renderEquipOptionCB(equipment) {
-    return (
-      <Pressable
-        key={equipment}
-        role="button"
-        onPress={chooseEquipACB}
-        style={props.equipment.includes(equipment) ? styles.selectedButton : styles.button}
-      >
-        <Text style={styles.buttonText}>{equipment}</Text>
-      </Pressable>
-    );
-
-    function chooseEquipACB() {
-      props.onParamChange("equipment", equipment);
-    }
-  }
-
-  function chooseTargetMuscleACB(muscle) {
-    props.onParamChange("targetMuscle", muscle);
-  }
-
-  function chooseExperienceLevelACB(level) {
-    props.onParamChange("experienceLevel", level);
-  }
 }
 
 // ── Styles ──────────────────────────────────────────────────────────────────
@@ -161,14 +166,14 @@ const styles = StyleSheet.create({
   // Hero Banner
   hero: {
     width: "100%",
-    overflow: "hidden", // 防止图片圆角溢出（如果后续加 borderRadius）
+    overflow: "hidden",
   },
   heroGradient: {
     flex: 1,
-    justifyContent: "flex-end", // 文字贴底对齐，视觉重心在下方
+    justifyContent: "flex-end",
     paddingHorizontal: 24,
     paddingBottom: 28,
-    paddingTop: 60,  // 留出顶部透明区域，让图片内容可见
+    paddingTop: 60,
   },
   heroGreeting: {
     fontSize: 13,
@@ -194,24 +199,111 @@ const styles = StyleSheet.create({
   form: { padding: 20 },
 
   sectionTitle: { fontSize: 18, fontWeight: "600", marginBottom: 12 },
-  section: { marginBottom: 24 },
-  row: { flexDirection: "row", gap: 12 },
+  section: { marginBottom: 20 },
 
-  button: {
+  divider: {
+    height: 2,
+    backgroundColor: colors.borderLight,
+    marginBottom: 20,
+    marginHorizontal: -4,
+  },
+
+  // Equal-width grid for Workout Time and Experience Level (3 items)
+  gridRow: {
+    flexDirection: "row",
+    gap: 10,
+  },
+  gridChip: {
+    flex: 1,
+    backgroundColor: colors.card,
+    paddingVertical: 14,
+    borderRadius: radius.md,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    alignItems: "center",
+  },
+  gridChipSelected: {
+    backgroundColor: colors.primaryLight,
+    borderColor: colors.primary,
+  },
+  gridChipText: {
+    color: colors.textMuted,
+    fontWeight: "600",
+    fontSize: 14,
+    textAlign: "center",
+  },
+  gridChipTextSelected: {
+    color: colors.primaryDark,
+    fontWeight: "700",
+    fontSize: 14,
+    textAlign: "center",
+  },
+
+  // Equipment 2x2 grid (4 items, equal size)
+  equipGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+  },
+  equipChip: {
+    width: "48%",
+    flexGrow: 1,
+    flexBasis: "45%",
+    backgroundColor: colors.card,
+    paddingVertical: 14,
+    borderRadius: radius.md,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    alignItems: "center",
+  },
+  equipChipSelected: {
+    backgroundColor: colors.primaryLight,
+    borderColor: colors.primary,
+  },
+  equipChipText: {
+    color: colors.textMuted,
+    fontWeight: "600",
+    fontSize: 14,
+  },
+  equipChipTextSelected: {
+    color: colors.primaryDark,
+    fontWeight: "700",
+    fontSize: 14,
+  },
+
+  // Horizontal scroll chips for Target Muscle
+  chipScroll: { marginHorizontal: -4 },
+  chipScrollContent: { paddingHorizontal: 4, gap: 10 },
+  chip: {
+    backgroundColor: colors.card,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    borderRadius: radius.pill,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+  },
+  chipSelected: {
+    backgroundColor: colors.primaryLight,
+    borderColor: colors.primary,
+  },
+  chipText: {
+    color: colors.textMuted,
+    fontWeight: "600",
+    fontSize: 14,
+  },
+  chipTextSelected: {
+    color: colors.primaryDark,
+    fontWeight: "700",
+    fontSize: 14,
+  },
+
+  generateButton: {
     backgroundColor: colors.primary,
     padding: 16,
     borderRadius: radius.md,
     alignItems: "center",
   },
-  selectedButton: {
-    backgroundColor: colors.primaryDark,
-    padding: 16,
-    borderRadius: radius.md,
-    alignItems: "center",
-    borderWidth: 2,
-    borderColor: colors.primaryBorder,
-  },
-  buttonText: {
+  generateButtonText: {
     color: colors.card,
     fontWeight: "bold",
     fontSize: 16,
@@ -223,13 +315,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  pickerWrapper: {
-    backgroundColor: colors.card,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    overflow: "hidden",
-  },
   warningText: {
     color: colors.warning,
     backgroundColor: colors.warningBg,
@@ -239,7 +324,3 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 });
-
-
-
-

@@ -1,9 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Redirect, Tabs } from "expo-router";
 import { observer } from "mobx-react-lite";
-import { Text, View } from "react-native";
+import { Platform, StyleSheet, Text, View } from "react-native";
 import { userStore } from "../../src/model/userStore";
-import { colors } from "../../src/theme";
+import { colors, shadow } from "../../src/theme";
 
 export default observer(function TabsLayout() {
   if (!userStore.ready) {
@@ -24,6 +24,8 @@ export default observer(function TabsLayout() {
         headerShown: false,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textTertiary,
+        tabBarStyle: styles.tabBar,
+        tabBarLabelStyle: styles.tabLabel,
       }}
     >
       <Tabs.Screen
@@ -32,6 +34,15 @@ export default observer(function TabsLayout() {
           title: "Home",
           tabBarIcon: function renderHomeIconACB({ color, size, focused }) {
             return <Ionicons name={focused ? "home" : "home-outline"} color={color} size={size} />;
+          },
+        }}
+      />
+      <Tabs.Screen
+        name="timer"
+        options={{
+          title: "Timer",
+          tabBarIcon: function renderTimerIconACB({ color, size, focused }) {
+            return <Ionicons name={focused ? "stopwatch" : "stopwatch-outline"} color={color} size={size} />;
           },
         }}
       />
@@ -64,4 +75,18 @@ export default observer(function TabsLayout() {
       />
     </Tabs>
   );
+});
+
+const styles = StyleSheet.create({
+  tabBar: {
+    height: Platform.OS === "ios" ? 88 : 64,
+    paddingTop: 4,
+    borderTopWidth: 0,
+    backgroundColor: colors.card,
+    ...shadow.md,
+  },
+  tabLabel: {
+    fontSize: 11,
+    fontWeight: "600",
+  },
 });

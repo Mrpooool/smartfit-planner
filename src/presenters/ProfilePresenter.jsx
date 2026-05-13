@@ -1,14 +1,17 @@
 import { observer } from "mobx-react-lite";
+import { useState } from "react";
 import { useRouter } from "expo-router";
-import { Alert, Platform } from "react-native";
+import { Platform } from "react-native";
 import { planStore } from "../model/planStore";
 import { uiStore } from "../model/uiStore";
 import { userStore } from "../model/userStore";
-import { logoutUser } from "../persistence/authRepo";
+import { logoutUser, updateUsername } from "../persistence/authRepo";
 import { ProfileView } from "../views/ProfileView";
 
 export default observer(function ProfilePresenter() {
   const router = useRouter();
+  const [logoutModalVisible, setLogoutModalVisible] = useState(false);
+
   const allCompletedDates = getUniqueCompletedDates([
     ...(planStore.completionHistory || []),
     ...(planStore.workoutHistory || []).map(function mapWorkoutDateCB(workout) {
@@ -31,26 +34,22 @@ export default observer(function ProfilePresenter() {
   }
 
   function onLogoutACB() {
-    function performLogout() {
-      logoutUser();
-    }
-
     if (Platform.OS === "web") {
-      setTimeout(function delayConfirmACB() {
-        if (window.confirm("Are you sure you want to log out?")) {
-          performLogout();
-        }
-      }, 0);
+      if (window.confirm("Are you sure you want to log out?")) {
+        logoutUser();
+      }
     } else {
-      Alert.alert(
-        "Logout",
-        "Are you sure you want to log out?",
-        [
-          { text: "Cancel", style: "cancel" },
-          { text: "Logout", style: "destructive", onPress: performLogout },
-        ]
-      );
+      setLogoutModalVisible(true);
     }
+  }
+
+  function onConfirmLogoutACB() {
+    setLogoutModalVisible(false);
+    logoutUser();
+  }
+
+  function onCancelLogoutACB() {
+    setLogoutModalVisible(false);
   }
 
   function onNavigateToPlansACB() {
@@ -79,6 +78,25 @@ export default observer(function ProfilePresenter() {
     }, {});
   }
 
+  async function onUpdateUsernameACB(newName) {
+    try {
+      await updateUsername(newName);
+      uiStore.showToast("Username updated!", "success");
+    } catch (err) {
+      uiStore.showToast(err.message || "Failed to update username", "error");
+    }
+  }
+
+  function getTodayWorkoutSeconds() {
+    const today = new Date().toISOString().split("T")[0];
+    return planStore.workoutTimeLog[today] || 0;
+  }
+
+  function getTotalWorkoutSeconds() {
+    const log = planStore.workoutTimeLog || {};
+    return Object.values(log).reduce(function sumCB(acc, val) { return acc + (val || 0); }, 0);
+  }
+
   return (
     <ProfileView
       savedPlans={planStore.savedPlans}
@@ -93,6 +111,13 @@ export default observer(function ProfilePresenter() {
       onImageModeChange={onImageModeChangeACB}
       onNavigateToPlans={onNavigateToPlansACB}
       onLogout={onLogoutACB}
+      logoutModalVisible={logoutModalVisible}
+      onConfirmLogout={onConfirmLogoutACB}
+      onCancelLogout={onCancelLogoutACB}
+      onUpdateUsername={onUpdateUsernameACB}
+      todayWorkoutSeconds={getTodayWorkoutSeconds()}
+      totalWorkoutSeconds={getTotalWorkoutSeconds()}
+      workoutTimeLog={planStore.workoutTimeLog}
     />
   );
 });

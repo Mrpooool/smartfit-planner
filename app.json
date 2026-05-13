@@ -48,8 +48,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "8a336619-533d-4773-9e3e-545f30479d6a"
+        "projectId": "ecc0fe19-dba4-499f-b32e-ad18d3bdd3b7"
       }
-    }
+    },
+    "owner": "taotao_114514"
   }
 }

@@ -65,15 +65,11 @@ export function PlanDirectoryView({
         <View style={styles.cardContent}>
           <View style={styles.nameRow}>
             <Text style={styles.planName}>{plan.name || "Untitled Plan"}</Text>
-            {completedToday ? (
-              <View style={styles.completedBadge}>
-                <Text style={styles.completedBadgeText}>Completed ✅</Text>
-              </View>
-            ) : null}
           </View>
-          <Text style={styles.planMeta}>
-            {exerciseCount} exercises  ·  {weekCount} this week
-          </Text>
+          <View style={styles.metaColumn}>
+            <Text style={[styles.planMeta, { marginBottom: 2 }]}>{exerciseCount} exercises</Text>
+            <Text style={styles.planMeta}>{weekCount} this week</Text>
+          </View>
         </View>
         <TouchableOpacity
           style={styles.deleteBtn}
@@ -82,6 +78,11 @@ export function PlanDirectoryView({
         >
           <Ionicons name="remove-circle-outline" size={24} color={colors.error} />
         </TouchableOpacity>
+        {completedToday ? (
+          <View style={styles.completedBadge}>
+            <Text style={styles.completedBadgeText}>Completed ✅</Text>
+          </View>
+        ) : null}
       </TouchableOpacity>
     );
   }
@@ -222,6 +223,9 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.textSecondary,
   },
+  metaColumn: {
+    flexDirection: "column",
+  },
   deleteBtn: {
     padding: 4,
     marginLeft: 12,
@@ -240,6 +244,9 @@ const styles = StyleSheet.create({
     borderColor: colors.success,
   },
   completedBadge: {
+    position: "absolute",
+    bottom: 8,
+    right: 8,
     backgroundColor: colors.successLight,
     borderRadius: radius.pill,
     paddingHorizontal: 8,

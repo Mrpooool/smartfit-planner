@@ -27,6 +27,7 @@ export function LoginView(props) {
         <TextInput
           style={styles.input}
           placeholder="Email"
+          placeholderTextColor={colors.textTertiary}
           value={email}
           onChangeText={emailACB}
           editable={!props.isLoading}
@@ -36,6 +37,7 @@ export function LoginView(props) {
         <TextInput
           style={styles.input}
           placeholder="Password"
+          placeholderTextColor={colors.textTertiary}
           value={password}
           onChangeText={passwordACB}
           editable={!props.isLoading}
@@ -55,7 +57,7 @@ export function LoginView(props) {
         </Pressable>
 
         <Pressable style={styles.backButton} disabled={props.isLoading} onPress={forgotACB}>
-          <Text style={styles.backButtonText}>Forget password? Create a new one</Text>
+          <Text style={styles.backButtonText}>Forgot Password?</Text>
         </Pressable>
 
     </View>
@@ -84,6 +86,7 @@ const styles = StyleSheet.create({
       backgroundColor: colors.card,
       borderRadius: radius.sm,
       fontSize: 16,
+      color: colors.textPrimary,
   },
     button: {
     backgroundColor: colors.primary,

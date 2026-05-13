@@ -16,6 +16,9 @@ const model = {
   /** Workout snapshots grouped by completion date, independent of plan lifecycle */
   workoutHistory: [],
 
+  /** @type {Object<string, number>} date → total seconds worked out */
+  workoutTimeLog: {},
+
   ready: false, // true once Firestore data is loaded
 
   setCurrentPlan: action(function setCurrentPlan(plan) {
@@ -93,6 +96,15 @@ const model = {
 
   setWorkoutHistory: action(function setWorkoutHistory(history) {
     this.workoutHistory = Array.isArray(history) ? history : [];
+  }),
+
+  addWorkoutTime: action(function addWorkoutTime(date, seconds) {
+    const existing = this.workoutTimeLog[date] || 0;
+    this.workoutTimeLog = { ...this.workoutTimeLog, [date]: existing + seconds };
+  }),
+
+  setWorkoutTimeLog: action(function setWorkoutTimeLog(log) {
+    this.workoutTimeLog = log && typeof log === "object" ? { ...log } : {};
   }),
 
   // Update a single field (e.g. "sets", "reps") on one exercise inside currentPlan

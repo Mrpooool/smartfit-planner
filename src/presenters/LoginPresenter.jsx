@@ -1,7 +1,8 @@
 import { observer } from "mobx-react-lite";
 import { useState } from "react";
 import { uiStore } from "../model/uiStore";
-import { loginUser, } from "../persistence/authRepo";
+import { userStore } from "../model/userStore";
+import { loginUser } from "../persistence/authRepo";
 import { LoginView } from "../views/LoginView";
 
 export default observer(function LoginPresenter() {
@@ -13,12 +14,13 @@ export default observer(function LoginPresenter() {
     setIsLoading(true);
     setError(null);
     try{
-      await loginUser(email, password)
-      uiStore.showToast("Login Succesfully","success")
+      const credential = await loginUser(email, password);
+      const displayName = credential.user.displayName || credential.user.email;
+      uiStore.showToast("Welcome! " + displayName, "success");
     }catch(err){
       const errormessage = getErrorMessage(err.code);
       setError(errormessage);
-      uiStore.showToast(errormessage,"error")
+      uiStore.showToast(errormessage,"error");
     }finally{
       setIsLoading(false);
     }
@@ -27,9 +29,13 @@ export default observer(function LoginPresenter() {
 
   function getErrorMessage(code) {
     const errorMap = {
-      "auth/invalid-credential": "Password wrong, try again",
+      "auth/invalid-credential": "Username or password not correct, please try again",
+      "auth/user-not-found": "Username or password not correct, please try again",
+      "auth/wrong-password": "Username or password not correct, please try again",
+      "auth/invalid-email": "Please enter a valid email address",
+      "auth/too-many-requests": "Too many attempts, please try again later",
     };
-  return errorMap[code] || `Login failed: ${code || "unknown error"}`;
+  return errorMap[code] || "Username or password not correct, please try again";
   }
 
   return (

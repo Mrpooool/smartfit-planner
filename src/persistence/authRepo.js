@@ -43,3 +43,12 @@ export function logoutUser() {
 export function resetPassword(email) {
   return sendPasswordResetEmail(auth, email);
 }
+
+export async function updateUsername(newUsername) {
+  const user = auth.currentUser;
+  if (!user) throw new Error("Not logged in");
+  const trimmed = newUsername.trim();
+  if (!trimmed) throw new Error("Username cannot be empty");
+  await updateProfile(user, { displayName: trimmed });
+  userStore.setUser(user.uid, user.email, trimmed);
+}

@@ -13,7 +13,7 @@ export default observer(function GeneratorPresenter() {
     duration: 30,
     equipment: [],
     experienceLevel: "beginner",
-    targetMuscle: "full body",
+    targetMuscle: ["full body"],
   }));
   //存API调用状态的promise，数据和错误
   const planPromiseState = useLocalObservable(() => ({
@@ -57,7 +57,7 @@ export default observer(function GeneratorPresenter() {
       params: {
         duration: String(formParams.duration),
         experienceLevel: formParams.experienceLevel,
-        targetMuscle: formParams.targetMuscle,
+        targetMuscle: Array.isArray(formParams.targetMuscle) ? formParams.targetMuscle.join(", ") : formParams.targetMuscle,
         equipment: JSON.stringify(formParams.equipment),
       },
     });
@@ -70,6 +70,20 @@ export default observer(function GeneratorPresenter() {
         formParams.equipment = formParams.equipment.filter(item => item !== value);
       } else {
         formParams.equipment = [...formParams.equipment, value];
+      }
+    } else if (paramName === "targetMuscle") {
+      if (formParams.targetMuscle.includes(value)) {
+        // Don't allow deselecting all — keep at least one
+        if (formParams.targetMuscle.length > 1) {
+          formParams.targetMuscle = formParams.targetMuscle.filter(item => item !== value);
+        }
+      } else {
+        // If selecting 'full body', clear others; if selecting specific, remove 'full body'
+        if (value === "full body") {
+          formParams.targetMuscle = ["full body"];
+        } else {
+          formParams.targetMuscle = [...formParams.targetMuscle.filter(item => item !== "full body"), value];
+        }
       }
     } else {
       formParams[paramName] = value;

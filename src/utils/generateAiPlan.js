@@ -21,7 +21,9 @@ export async function generateAiPlan(params) {
   var duration = params?.duration;
   var equipment = Array.isArray(params?.equipment) ? params.equipment : [];
   var experienceLevel = params?.experienceLevel;
-  var targetMuscle = params?.targetMuscle;
+  var targetMuscle = Array.isArray(params?.targetMuscle)
+    ? params.targetMuscle.join(", ")
+    : (params?.targetMuscle || "full body");
   var avoidExerciseNames = Array.isArray(params?.avoidExerciseNames) ? params.avoidExerciseNames : [];
   var onWarning = params?.onWarning;
 

@@ -6,7 +6,6 @@ import { getExercisesByMuscle } from "../api/exerciseDbApi";
 import { planStore } from "../model/planStore";
 import { uiStore } from "../model/uiStore";
 import { userStore } from "../model/userStore";
-import { resolvePromise } from "../utils/resolvePromise";
 import { ExerciseCardView } from "../views/ExerciseCardView";
 import { ExplorerView } from "../views/ExplorerView";
 import { AsyncStateView } from "../views/common/AsyncStateView";
@@ -83,17 +82,16 @@ export default observer(function ExplorerPresenter() {
   function fetchExercisesByFilter(muscle) {
     const resolvedMuscle = resolveApiMuscle(muscle);
 
-    let promiseState = {
-      promise: null,
-      data: null,
-      error: null,
-    };
     let request = getExercisesByMuscle(resolvedMuscle).then(function normalizeResultsCB(results) {
       return normalizeExerciseList(results);
     });
 
-    setSearchPromiseState(promiseState);
-    resolvePromise(request, promiseState);
+    // Immediately show loading state (promise set, data/error null)
+    setSearchPromiseState({
+      promise: request,
+      data: null,
+      error: null,
+    });
 
     request
       .then(function applyDataCB(data) {
