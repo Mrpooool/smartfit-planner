@@ -196,21 +196,6 @@ export function ProfileView({
         </View>
       ) : null}
 
-      <View style={styles.darkModeRow}>
-        <View style={styles.darkModeInfo}>
-          <Ionicons name="moon-outline" size={20} color={colors.textSecondary} />
-          <Text style={styles.darkModeLabel}>Dark Mode</Text>
-        </View>
-        <Switch
-          value={false}
-          onValueChange={function toggleDarkACB() {
-            uiStore.showToast("Dark mode is coming in a future update!", "info");
-          }}
-          trackColor={{ false: colors.border, true: colors.primary }}
-          thumbColor={colors.card}
-        />
-      </View>
-
       <TouchableOpacity style={styles.logoutButton} onPress={onLogout}>
         <Text style={styles.logoutText}>Logout</Text>
       </TouchableOpacity>

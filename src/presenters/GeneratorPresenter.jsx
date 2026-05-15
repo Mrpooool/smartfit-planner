@@ -73,10 +73,7 @@ export default observer(function GeneratorPresenter() {
       }
     } else if (paramName === "targetMuscle") {
       if (formParams.targetMuscle.includes(value)) {
-        // Don't allow deselecting all — keep at least one
-        if (formParams.targetMuscle.length > 1) {
-          formParams.targetMuscle = formParams.targetMuscle.filter(item => item !== value);
-        }
+        formParams.targetMuscle = formParams.targetMuscle.filter(item => item !== value);
       } else {
         // If selecting 'full body', clear others; if selecting specific, remove 'full body'
         if (value === "full body") {

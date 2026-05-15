@@ -3,20 +3,23 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-nati
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { colors, radius, shadow, typography } from "../theme";
 import { ExerciseImage } from "./common/ExerciseImage";
+import ConfettiCannon from "react-native-confetti-cannon";
 
-function formatTime(totalSeconds) {
+function formatTime(totalMs) {
+  const totalSeconds = Math.floor(totalMs / 1000);
   const hrs = Math.floor(totalSeconds / 3600);
   const mins = Math.floor((totalSeconds % 3600) / 60);
   const secs = totalSeconds % 60;
+  const ms = Math.floor((totalMs % 1000) / 10);
   const pad = function padCB(n) { return String(n).padStart(2, "0"); };
   if (hrs > 0) {
-    return pad(hrs) + ":" + pad(mins) + ":" + pad(secs);
+    return pad(hrs) + ":" + pad(mins) + ":" + pad(secs) + "." + pad(ms);
   }
-  return pad(mins) + ":" + pad(secs);
+  return pad(mins) + ":" + pad(secs) + "." + pad(ms);
 }
 
 export function TimerView({
-  seconds,
+  timeMs,
   isRunning,
   onStartPause,
   onStop,
@@ -24,6 +27,7 @@ export function TimerView({
   selectedPlan,
   currentExerciseIndex,
   currentSet,
+  showConfetti,
   onSelectPlan,
   onNextSet,
   onExercisePress,
@@ -41,7 +45,7 @@ export function TimerView({
     >
       {/* ── Timer Display ── */}
       <View style={styles.timerSection}>
-        <Text style={styles.timerDisplay}>{formatTime(seconds)}</Text>
+        <Text style={styles.timerDisplay}>{formatTime(timeMs)}</Text>
 
         <View style={styles.controlsRow}>
           <TouchableOpacity
@@ -55,7 +59,7 @@ export function TimerView({
             />
           </TouchableOpacity>
 
-          {(isRunning || seconds > 0) ? (
+          {(isRunning || timeMs > 0) ? (
             <TouchableOpacity style={styles.stopButton} onPress={onStop}>
               <Ionicons name="close" size={24} color={colors.card} />
             </TouchableOpacity>
@@ -154,6 +158,16 @@ export function TimerView({
           )}
         </View>
       )}
+
+      {/* Confetti Animation */}
+      {showConfetti && (
+        <ConfettiCannon
+          count={100}
+          origin={{ x: -10, y: 0 }}
+          autoStart={true}
+          fadeOut={true}
+        />
+      )}
     </ScrollView>
   );
 }
@@ -166,13 +180,14 @@ const styles = StyleSheet.create({
   timerSection: {
     alignItems: "center",
     marginBottom: 32,
+    marginTop: 20,
   },
   timerDisplay: {
     fontSize: 56,
-    fontWeight: "200",
+    fontWeight: "800",
     color: colors.textPrimary,
     letterSpacing: 2,
-    marginBottom: 24,
+    marginBottom: 36,
     fontVariant: ["tabular-nums"],
   },
   controlsRow: {

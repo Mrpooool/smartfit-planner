@@ -3,6 +3,7 @@ import { observable, action } from "mobx";
 const model = {
   toastMessage: null,
   toastType: "info", // "info" | "success" | "warning"
+  showConfetti: false,
 
   showToast: action(function(message, type = "info", duration = 3000) {
     this.toastMessage = message;
@@ -12,6 +13,15 @@ const model = {
     this._timeout = setTimeout(action(() => {
       this.toastMessage = null;
     }), duration);
+  }),
+
+  setConfetti: action(function(value) {
+    this.showConfetti = value;
+    if (value) {
+      setTimeout(action(() => {
+        this.showConfetti = false;
+      }), 4000);
+    }
   }),
 };
 

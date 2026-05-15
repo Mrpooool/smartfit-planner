@@ -8,7 +8,7 @@ import { TimerView } from "../views/TimerView";
 
 export default observer(function TimerPresenter() {
   const router = useRouter();
-  const [seconds, setSeconds] = useState(0);
+  const [timeMs, setTimeMs] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [selectedPlanId, setSelectedPlanId] = useState(null);
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
@@ -23,8 +23,8 @@ export default observer(function TimerPresenter() {
   useEffect(function timerEffectACB() {
     if (isRunning) {
       intervalRef.current = setInterval(function tickCB() {
-        setSeconds(function incCB(prev) { return prev + 1; });
-      }, 1000);
+        setTimeMs(function incCB(prev) { return prev + 30; });
+      }, 30);
     } else {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
@@ -42,30 +42,45 @@ export default observer(function TimerPresenter() {
     setIsRunning(function toggleCB(prev) { return !prev; });
   }
 
-  function onStopACB(isCompleted = false) {
+  function onStopACB() {
     setIsRunning(false);
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
 
-    if (seconds > 0) {
+    const exercises = selectedPlan?.exercises || [];
+    const exerciseCount = exercises.length;
+    const currentExercise = exercises[currentExerciseIndex];
+    const totalSets = currentExercise?.sets || 1;
+
+    // Plan is completed only if user manually clicks stop on the last set of the last exercise
+    const isPlanCompleted = selectedPlan != null && 
+                            exerciseCount > 0 && 
+                            currentExerciseIndex === exerciseCount - 1 && 
+                            currentSet >= totalSets;
+
+    const seconds = Math.floor(timeMs / 1000);
+
+    if (seconds >= 60) {
       // Save the workout time
       const today = new Date().toISOString().split("T")[0];
       planStore.addWorkoutTime(today, seconds);
       const mins = Math.floor(seconds / 60);
       const secs = seconds % 60;
       
-      const message = isCompleted 
-        ? "Plan Completed!\nWorkout saved: " + mins + "m " + secs + "s"
-        : "Workout saved: " + mins + "m " + secs + "s";
-        
-      uiStore.showToast(message, "success");
-    } else if (isCompleted) {
-      uiStore.showToast("Plan Completed!", "success");
+      if (isPlanCompleted) {
+        planStore.markCompleted(selectedPlan.id, today);
+        uiStore.showToast("🎉 Plan Completed!\nWorkout saved: " + mins + "m " + secs + "s", "success");
+        uiStore.setConfetti(true);
+      } else {
+        uiStore.showToast("Workout saved: " + mins + "m " + secs + "s", "success");
+      }
+    } else {
+      // If less than 60s, do not save, do not prompt.
     }
 
-    setSeconds(0);
+    setTimeMs(0);
     setSelectedPlanId(null);
     setCurrentExerciseIndex(0);
     setCurrentSet(1);
@@ -93,8 +108,10 @@ export default observer(function TimerPresenter() {
       if (currentExerciseIndex < exerciseCount - 1) {
         setCurrentExerciseIndex(function nextExCB(prev) { return prev + 1; });
       } else {
-        // Plan Completed
-        onStopACB(true);
+        // Last exercise and last set reached. Do not auto-stop.
+        // Wait for user to click Stop to officially complete.
+        setCurrentSet(totalSets); // keep it at max
+        uiStore.showToast("All sets finished! Click Stop to complete.", "info");
       }
     }
   }
@@ -118,7 +135,7 @@ export default observer(function TimerPresenter() {
 
   return (
     <TimerView
-      seconds={seconds}
+      timeMs={timeMs}
       isRunning={isRunning}
       onStartPause={onStartPauseACB}
       onStop={onStopACB}
@@ -126,6 +143,7 @@ export default observer(function TimerPresenter() {
       selectedPlan={selectedPlan}
       currentExerciseIndex={currentExerciseIndex}
       currentSet={currentSet}
+      showConfetti={uiStore.showConfetti}
       onSelectPlan={onSelectPlanACB}
       onNextSet={onNextSetACB}
       onExercisePress={onExercisePressACB}
