@@ -88,7 +88,7 @@ function formatFilterLabel(filterName) {
   if (!filterName) {
     return "";
   }
-  return filterName;
+  return filterName.charAt(0).toUpperCase() + filterName.slice(1);
 }
 
 const styles = StyleSheet.create({
